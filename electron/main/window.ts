@@ -168,50 +168,50 @@ const debounceResize = (fn: any, wait: number) => {
 
 export function createTray() {
   
-  const trayMenuTemplate = [
-    {
-      label: '显示主界面',
-      click: function () {
-        if (AppWindow.mainWindow && AppWindow.mainWindow.isDestroyed() == false) {
-          if (AppWindow.mainWindow.isMinimized()) AppWindow.mainWindow.restore()
-          AppWindow.mainWindow.show()
-          AppWindow.mainWindow.focus()
-        } else {
-          createMainWindow()
-        }
-      }
-    },
-    {
-      label: '彻底退出并停止下载',
-      click: function () {
-        if (AppWindow.mainWindow) {
-          AppWindow.mainWindow.destroy()
-          AppWindow.mainWindow = undefined
-        }
-        app.quit()
-      }
-    }
-  ]
+  // const trayMenuTemplate = [
+  //   {
+  //     label: '显示主界面',
+  //     click: function () {
+  //       if (AppWindow.mainWindow && AppWindow.mainWindow.isDestroyed() == false) {
+  //         if (AppWindow.mainWindow.isMinimized()) AppWindow.mainWindow.restore()
+  //         AppWindow.mainWindow.show()
+  //         AppWindow.mainWindow.focus()
+  //       } else {
+  //         createMainWindow()
+  //       }
+  //     }
+  //   },
+  //   {
+  //     label: '彻底退出并停止下载',
+  //     click: function () {
+  //       if (AppWindow.mainWindow) {
+  //         AppWindow.mainWindow.destroy()
+  //         AppWindow.mainWindow = undefined
+  //       }
+  //       app.quit()
+  //     }
+  //   }
+  // ]
 
   
-  const icon = getResourcesPath('app.ico')
-  AppWindow.appTray = new Tray(icon)
+  // const icon = getResourcesPath('app.ico')
+  // AppWindow.appTray = new Tray(icon)
   
-  const contextMenu = Menu.buildFromTemplate(trayMenuTemplate)
+  // const contextMenu = Menu.buildFromTemplate(trayMenuTemplate)
   
-  AppWindow.appTray.setToolTip('阿里云盘小白羊版')
+  // AppWindow.appTray.setToolTip('阿里云盘小白羊版')
   
-  AppWindow.appTray.setContextMenu(contextMenu)
+  // AppWindow.appTray.setContextMenu(contextMenu)
 
-  AppWindow.appTray.on('click', () => {
-    if (AppWindow.mainWindow && AppWindow.mainWindow.isDestroyed() == false) {
-      if (AppWindow.mainWindow.isMinimized()) AppWindow.mainWindow.restore()
-      AppWindow.mainWindow.show()
-      AppWindow.mainWindow.focus()
-    } else {
-      createMainWindow()
-    }
-  })
+  // AppWindow.appTray.on('click', () => {
+  //   if (AppWindow.mainWindow && AppWindow.mainWindow.isDestroyed() == false) {
+  //     if (AppWindow.mainWindow.isMinimized()) AppWindow.mainWindow.restore()
+  //     AppWindow.mainWindow.show()
+  //     AppWindow.mainWindow.focus()
+  //   } else {
+  //     createMainWindow()
+  //   }
+  // })
 }
 
 export function creatUpload() {

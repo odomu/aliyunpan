@@ -1,0 +1,61 @@
+name: build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    name: build and release electron app
+    runs-on: ${{ matrix.os }}
+
+  strategy:
+    fail-fast: false
+    matrix:
+      os: [windows-latest, macos-latest, ubuntu-latest]
+
+  steps:
+    - name: Check out git repository
+      uses: actions/checkout@v3
+    
+    - name: Install Node.js
+      uses: actions/setup-node@v3
+    
+    - name: Install Yarn
+      run: npm install -g yarn
+    
+    - name: Install Dependencies
+      run: yarn install
+    
+    - name: Build Electron App
+      run: yarn run build
+      env:
+        GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+
+    - name: Cleanup Artifacts for Windows
+      if: matrix.os == 'windwos-latest'
+      run: |
+        npx rimraf "release/!(*.exe)"
+
+    - name: Cleanup Artifacts for MacOS
+      if: matrix.os == 'macos-latest'
+      run: |
+        npx rimraf "release/!(*.dmg)"
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.os }}
+        path: release
+
+    - name: Release
+      uses: softprops/action-gh-release@v0.1.15
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: "release/**"
+      env:
+        GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}    
+    
+
+
