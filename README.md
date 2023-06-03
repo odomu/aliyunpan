@@ -50,6 +50,7 @@
 - 可以快速复制文件，预览视频的雪碧图，并直接删除文件。
 - 能够管理数万文件夹和数万文件，并一次性列出文件夹中的全部文件。
 - 支持一次性上传/下载百万级的文件/文件夹。
+
 # 请作者喝一杯咖啡
 <p align="left">
   <img height="280" width="280" src="https://github.com/odomu/aliyunpan/assets/50035498/75efbbf3-36c0-4991-9dff-4ae319d09e7c" />
