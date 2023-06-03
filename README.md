@@ -1,52 +1,10 @@
 <p align="center">
-  <img src="https://github.com/gaozhangmin/staticResource/blob/master/images/icon.png" alt="NebulaGraph Data Intelligence Suite(ngdi)">
-</p>
-<p align="center">
-    <br> English | <a href="README-CN.md">中文</a>
-</p>
-<p align="center">
-    <em>小白羊网盘 - powered by 阿里云盘Open.</em>
+  <img src="https://github.com/odomu/aliyunpan/blob/c7fc6162t5VAG9fYLcCcJBp2YYaauEZoptetRwr/static/images/icon_256x256.png" alt="NebulaGraph Data Intelligence Suite(ngdi)">
 </p>
 
 <p align="center">
-<!--   <a href="https://github.com/gaozhangmin/staticResource/blob/master/images/wechat_public_account.png" target="_blank">
-    <img src="https://img.shields.io/badge/-微信关注“小白羊网盘”公众号-orange.svg" alt="#" align="right">
-  </a> -->
-  <a href="LICENSE" target="_blank">
-    <img alt="MIT License" src="https://img.shields.io/github/license/gaozhangmin/aliyunpan?style=flat-square&logoColor=white" />
-  </a>
-
-  <!-- TypeScript Badge -->
-  <img alt="TypeScript" src="https://img.shields.io/badge/-TypeScript-blue?style=flat-square&logo=typescript&logoColor=white" />
-
-  <!-- VUE Badge -->
-  <img alt="VUE" src="https://img.shields.io/badge/Vue.js-35495E?style=flat-square&logo=vuedotjs&logoColor=white" />
-
-  <a href="https://github.com/gaozhangmin/aliyunpan/releases" target="_blank">
-    <img alt="macOS" src="https://img.shields.io/badge/-macOS-black?style=flat-square&logo=apple&logoColor=white" />
-  </a>
-
-  <a href="https://github.com/gaozhangmin/aliyunpan/releases" target="_blank">
-    <img alt="Windows" src="https://img.shields.io/badge/-Windows-blue?style=flat-square&logo=windows&logoColor=white" />
-  </a>
-
-  <a href="https://github.com/gaozhangmin/aliyunpan/releases" target="_blank">
-    <img alt="Linux" src="https://img.shields.io/badge/-Linux-yellow?style=flat-square&logo=linux&logoColor=white" />
-  </a>  
-
-  <a href="https://github.com/gaozhangmin/aliyunpan/stargazers" target="_blank">
-    <img alt="Star" src="https://img.shields.io/github/stars/gaozhangmin/aliyunpan?style=social" />
-  </a>
-
-  <a href="https://github.com/gaozhangmin/aliyunpan/releases/latest" target="_blank">
-    <img alt="Star" src="https://img.shields.io/github/downloads/gaozhangmin/aliyunpan/total?style=social" />
-  </a>
-
+    <em>阿里云盘小白羊版 v3 修复版</em>
 </p>
-
-
-[![](https://img.shields.io/badge/-%E5%8A%9F%E8%83%BD-blue)](#功能-) [![](https://img.shields.io/badge/-%E7%95%8C%E9%9D%A2-blue)](#界面-) [![](https://img.shields.io/badge/-%E5%AE%89%E8%A3%85-blue)](#安装-) [![](https://img.shields.io/badge/-%E5%BE%AE%E4%BF%A1%E5%85%AC%E4%BC%97%E5%8F%B7-blue)](#小白羊公众号-) [![](https://img.shields.io/badge/-%E4%BA%A4%E6%B5%81%E7%A4%BE%E5%8C%BA-blue)](#交流社区-) [![](https://img.shields.io/badge/-%E9%B8%A3%E8%B0%A2-blue)](#鸣谢-) [![](https://img.shields.io/badge/-%E8%AF%B7%E5%96%9D%E5%92%96%E5%95%A1-blue)](#请作者喝一杯咖啡-) [![](https://img.shields.io/badge/-Star-blue)](#Star-) [![](https://img.shields.io/badge/-%E5%A3%B0%E6%98%8E-blue)](#免责声明-)
-
 
 # 功能 [![](https://img.shields.io/badge/-%E5%8A%9F%E8%83%BD-blue)](#功能-)
 1.根据阿里云盘Open平台api开发的网盘客户端，支持win7-11，macOS，linux <br>
