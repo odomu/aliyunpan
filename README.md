@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/odomu/aliyunpan/blob/c7fc6162t5VAG9fYLcCcJBp2YYaauEZoptetRwr/static/images/icon_256x256.png" alt="NebulaGraph Data Intelligence Suite(ngdi)">
+  <img src="https://github.com/odomu/aliyunpan/blob/main/static/images/icon_256x256.png" alt="NebulaGraph Data Intelligence Suite(ngdi)">
 </p>
 
 <p align="center">
