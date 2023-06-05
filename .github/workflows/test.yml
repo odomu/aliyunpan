@@ -44,17 +44,17 @@ jobs:
             ${{ runner.os }}-${{ matrix.node-version }}-nodemodules-
 
       - name: Cache Electron
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
-          path: ${{ github.workspace }}/.cache/electron
+          path: %LOCALAPPDATA%/electron/Cache
           key: ${{ runner.os }}-electron-cache-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-electron-cache-
 
       - name: Cache Electron-Builder
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
-          path: ${{ github.workspace }}/.cache/electron-builder
+          path: %LOCALAPPDATA%/electron-builder/Cache
           key: ${{ runner.os }}-electron-builder-cache-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-electron-builder-cache-
