@@ -42,7 +42,7 @@
     "dexie": "^3.2.4",
     "dlnacasts2": "^0.2.0",
     "dom-to-image": "^2.6.0",
-    "electron": "21.4.4",
+    "electron": "22.3.25",
     "electron-builder": "^24.6.4",
     "electron-is": "^3.0.0",
     "electron-log": "^5.0.0",
