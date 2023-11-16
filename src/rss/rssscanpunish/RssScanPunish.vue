@@ -48,14 +48,14 @@ const treeData = ref<TreeNodeData[]>([])
 
 const handleSelectAll = () => {
   TreeSelectAll(checkedKeys, checkedKeysBak)
-  checkedSize.value = GetTreeCheckedSize(ScanPanData, panType.value, checkedKeys.value, ShowWeiGui.value, ShowNoShare.value)
+  checkedSize.value = GetTreeCheckedSize(ScanPanData, panType.value, checkedKeys.value, ShowWeiGui.value, ShowPartWeiGui.value, ShowNoShare.value)
 }
 const handleTreeSelect = (keys: any, info: {
   node: EventDataNode
 }) => TreeSelectOne([info.node.key as string], checkedKeys)
 const handleTreeCheck = (keys: any, e: any) => {
   TreeCheckFileChild(e.node, checkedKeys)
-  checkedSize.value = GetTreeCheckedSize(ScanPanData, panType.value, checkedKeys.value, ShowWeiGui.value, ShowNoShare.value)
+  checkedSize.value = GetTreeCheckedSize(ScanPanData, panType.value, checkedKeys.value, ShowWeiGui.value, ShowPartWeiGui.value, ShowNoShare.value)
 }
 
 const handleReset = () => {
@@ -77,12 +77,11 @@ const handleReset = () => {
 watch(userStore.$state, handleReset)
 
 const RefreshTree = (checkall: boolean) => {
-
   const expandedkeys: string[] = []
   const checkedkeys: string[] = []
   let checkedsize = 0
   const treeDataMap = new Map<string, TreeNodeData>()
-  const treeDataNodes = GetTreeNodes(ScanPanData, panType.value + '_root', treeDataMap, ShowWeiGui.value, ShowNoShare.value)
+  const treeDataNodes = GetTreeNodes(panType.value, ScanPanData, panType.value + '_root', treeDataMap, ShowWeiGui.value, ShowPartWeiGui.value, ShowNoShare.value)
   Object.freeze(treeDataNodes)
   treeData.value = treeDataNodes
   const values = treeDataMap.values()
@@ -190,7 +189,6 @@ const handleScan = () => {
       message.error(err.message || '扫描失败')
     })
     .then(() => {
-
       scanLoading.value = false
       RefreshTree(true)
       scanLoaded.value = true
@@ -200,12 +198,17 @@ const handleScan = () => {
 
 
 const ShowWeiGui = ref(true)
+const ShowPartWeiGui = ref(true)
 const ShowNoShare = ref(true)
 const scanType = ref('video')
 const panType = ref('backup')
 
 const handleShowWeiGui = () => {
   ShowWeiGui.value = !ShowWeiGui.value
+  RefreshTree(true)
+}
+const handleShowPartWeiGui = () => {
+  ShowPartWeiGui.value = !ShowPartWeiGui.value
   RefreshTree(true)
 }
 const handleShowNoShare = () => {
@@ -256,8 +259,14 @@ const handleShowNoShare = () => {
         <div style='flex: auto'></div>
 
         <AntdCheckbox v-if='scanLoaded' v-model:checked='ShowWeiGui' style='margin-right: 12px'
-                      title='是否显示违规的文件' @click.stop.prevent='handleShowWeiGui'>违规
+                      title='是否显示完全违规的文件' @click.stop.prevent='handleShowWeiGui'>完全违规
         </AntdCheckbox>
+
+        <AntdCheckbox v-if="scanLoaded && panType == 'resource'"
+                      v-model:checked='ShowPartWeiGui' style='margin-right: 12px'
+                      title='是否显示部分违规的文件' @click.stop.prevent='handleShowPartWeiGui'>部分违规
+        </AntdCheckbox>
+
         <AntdCheckbox v-if='scanLoaded' v-model:checked='ShowNoShare' style='margin-right: 12px'
                       title='是否显示禁止分享的文件' @click.stop.prevent='handleShowNoShare'>禁止分享
         </AntdCheckbox>
@@ -290,7 +299,7 @@ const handleShowNoShare = () => {
           移动选中
         </a-button>
         <a-button v-else type='primary' size='small' tabindex='-1' :loading='scanLoading' @click='handleScan'>
-          开始扫描违规
+          开始扫描
         </a-button>
       </a-row>
       <a-spin v-if='scanLoading || scanLoaded' :loading='scanLoading' tip='耐心等待，很慢的...'

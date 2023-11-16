@@ -239,7 +239,7 @@ export interface IAliGetDirModel {
   namesearch: string
   size: number
   time: number
-
+  punish_flag?: number
   description: string
 }
 
@@ -262,6 +262,7 @@ export interface IAliGetFileModel {
   starred: boolean
   isDir: boolean
   thumbnail: string
+  punish_flag?: number
   description: string
   album_id?: string
   compilation_id?: string

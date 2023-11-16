@@ -116,7 +116,8 @@ const handleDelete = () => {
     return
   }
   delLoading.value = true
-  AliFileCmd.ApiTrashBatch(user.user_id, user.default_drive_id, idList).then((success: string[]) => {
+  let drive_id = panType.value === 'backup' ? user.default_drive_id : user.resource_drive_id
+  AliFileCmd.ApiTrashBatch(user.user_id, drive_id, idList).then((success: string[]) => {
     delLoading.value = false
     DeleteFromSameData(ScanPanData, idList)
     checkedKeys.value.clear()
@@ -232,7 +233,7 @@ const handleScan = () => {
                   title='把选中的文件放入回收站' @click='handleDelete'>删除选中
         </a-button>
         <a-button v-else type='primary' size='small' tabindex='-1' :loading='scanLoading' @click='handleScan'>
-          开始扫描重复
+          开始扫描
         </a-button>
       </a-row>
       <a-spin v-if='scanLoading || scanLoaded' :loading='scanLoading' tip='耐心等待，很慢的...'

@@ -9,7 +9,7 @@ import { foldericonfn, iconWeifaFn, iconWeixiangFn, IScanDriverModel, TreeNodeDa
 
 export async function GetWeiGuiFile(user_id: string, PanData: IScanDriverModel, Processing: Ref<number>, scanCount: Ref<number>, totalFileCount: Ref<number>, scanType: string) {
   scanCount.value = 0
-  const keys = PanData.DirMap.keys() 
+  const keys = PanData.DirMap.keys()
   let dirList: IAliDirBatchResp[] = []
   Processing.value = 0
   while (true) {
@@ -23,23 +23,23 @@ export async function GetWeiGuiFile(user_id: string, PanData: IScanDriverModel, 
     }
     Processing.value += add
     if (dirList.length == 0) break
-    if (!PanData.drive_id) break 
+    if (!PanData.drive_id) break
 
     const isGet = await ApiBatchDirFileList(user_id, PanData.drive_id, dirList, scanType)
     if (isGet) {
       const list: IAliDirBatchResp[] = []
       for (let i = 0, maxi = dirList.length; i < maxi; i++) {
         if (dirList[i].next_marker && dirList[i].items.length < 2000) {
-          list.push(dirList[i]) 
+          list.push(dirList[i])
         } else {
           const dirID = dirList[i].dirID
-          
+
           const fileList = dirList[i].items
           totalFileCount.value += fileList.length
           let saveList: IAliGetDirModel[] = []
           let weifa = 0
           let noshare = 0
-          
+
           for (let j = 0, maxj = fileList.length; j < maxj; j++) {
             const fileItem = fileList[j]
             if (fileItem.icon == 'iconweifa' || fileItem.icon == 'iconweixiang') {
@@ -52,7 +52,7 @@ export async function GetWeiGuiFile(user_id: string, PanData: IScanDriverModel, 
                 namesearch: '',
                 size: fileItem.size,
                 time: fileItem.time,
-                
+                punish_flag: fileItem.punish_flag,
                 description: fileItem.icon
               } as IAliGetDirModel)
 
@@ -61,7 +61,6 @@ export async function GetWeiGuiFile(user_id: string, PanData: IScanDriverModel, 
             }
           }
           if (saveList.length > 0) {
-            
             const node = PanData.DirChildrenMap.get(dirID)
             if (node && node.length > 0) {
               node.sort((a, b) => a.name.localeCompare(b.name))
@@ -173,30 +172,37 @@ async function ApiBatchDirFileList(user_id: string, drive_id: string, dirList: I
 }
 
 
-export function GetTreeNodes(PanData: IScanDriverModel, parent_file_id: string, treeDataMap: Map<string, TreeNodeData>, ShowWeiGui: boolean, ShowNoShare: boolean) {
+export function GetTreeNodes(PanType: string, PanData: IScanDriverModel, parent_file_id: string, treeDataMap: Map<string, TreeNodeData>, ShowWeiGui: boolean, ShowPartWeiGui: boolean, ShowNoShare: boolean) {
   const data: TreeNodeData[] = []
   let item: IAliGetDirModel
 
   const dirList = PanData.DirChildrenMap.get(parent_file_id) || []
   for (let i = 0, maxi = dirList.length; i < maxi; i++) {
     item = dirList[i]
-    if (ShowWeiGui && (item.description == 'iconweifa' || PanData.WeiGuiDirMap.has(item.file_id))) {
-      
+    if (ShowWeiGui && (item.punish_flag == 2 || PanData.WeiGuiDirMap.has(item.file_id))) {
       data.push({
         key: item.file_id,
         title: item.name,
         icon: item.description == 'iconweifa' ? iconWeifaFn : foldericonfn,
         size: item.size,
-        children: GetTreeNodes(PanData, item.file_id, treeDataMap, ShowWeiGui, ShowNoShare)
+        children: GetTreeNodes(PanType, PanData, item.file_id, treeDataMap, ShowWeiGui, ShowPartWeiGui, ShowNoShare)
       } as TreeNodeData)
-    } else if (ShowNoShare && (item.description == 'iconweixiang' || PanData.NoShareDirMap.has(item.file_id))) {
-      
+    } else if (ShowPartWeiGui && PanType == 'resource'
+      && (item.punish_flag == 103 || PanData.WeiGuiDirMap.has(item.file_id))) {
+      data.push({
+        key: item.file_id,
+        title: item.name,
+        icon: item.description == 'iconweifa' ? iconWeifaFn : foldericonfn,
+        size: item.size,
+        children: GetTreeNodes(PanType, PanData, item.file_id, treeDataMap, ShowWeiGui, ShowPartWeiGui, ShowNoShare)
+      } as TreeNodeData)
+    } else if (ShowNoShare && (item.punish_flag != undefined || PanData.NoShareDirMap.has(item.file_id))) {
       data.push({
         key: item.file_id,
         title: item.name,
         icon: item.description == 'iconweixiang' ? iconWeixiangFn : foldericonfn,
         size: item.size,
-        children: GetTreeNodes(PanData, item.file_id, treeDataMap, ShowWeiGui, ShowNoShare)
+        children: GetTreeNodes(PanType, PanData, item.file_id, treeDataMap, ShowWeiGui, ShowPartWeiGui, ShowNoShare)
       } as TreeNodeData)
     }
   }
@@ -217,7 +223,7 @@ export function DeleteFromScanDataPunish(PanData: IScanDriverModel, idList: stri
     for (let j = 0, maxj = children.length; j < maxj; j++) {
       const key = children[j].file_id
       if (idList.includes(key)) {
-        
+
         idList = idList.filter((t) => t != key)
       } else {
         saveList.push(children[j])
@@ -227,12 +233,12 @@ export function DeleteFromScanDataPunish(PanData: IScanDriverModel, idList: stri
   }
 }
 
-export function GetTreeCheckedSize(PanData: IScanDriverModel, PanType: string, checkedKeys: string[], ShowWeiGui: boolean, ShowNoShare: boolean) {
+export function GetTreeCheckedSize(PanData: IScanDriverModel, PanType: string, checkedKeys: string[], ShowWeiGui: boolean, ShowPartWeiGui: boolean, ShowNoShare: boolean) {
   if (checkedKeys.length == 0) return 0
   const checkedMap = new Set(checkedKeys)
   let checkedsize = 0
   const treeDataMap = new Map<string, TreeNodeData>()
-  GetTreeNodes(PanData, PanType + '_root', treeDataMap, ShowWeiGui, ShowNoShare)
+  GetTreeNodes(PanType, PanData, PanType + '_root', treeDataMap, ShowWeiGui, ShowPartWeiGui, ShowNoShare)
   const values = treeDataMap.values()
   let clen = 0
   for (let i = 0, maxi = treeDataMap.size; i < maxi; i++) {

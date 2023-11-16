@@ -132,8 +132,8 @@ function handleSelectPlayer() {
           <i class='iconfont iconbulb' />
           <template #content>
             <div style='min-width: 400px'>
-              <span class='opblue'>自定义播放器</span> 不支持同步 播放进度 <br>
-              只能够跳转到<span class='opblue'>网页播放器</span>历史进度
+              <span class='opblue'>仅Mpv支持同步 播放进度</span> <br>
+              其他播放器只能够跳转到网页播放器历史进度
               <hr />
               已支持：PotPlayer，Mpv
             </div>

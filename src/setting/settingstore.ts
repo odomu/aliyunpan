@@ -303,7 +303,7 @@ function _loadSetting(val: any) {
   setting.downSavePathFull = defaultBool(val.downSavePathFull, true)
   setting.downSaveBreakWeiGui = defaultBool(val.downSaveBreakWeiGui, true)
   setting.uploadFileMax = defaultValue(val.uploadFileMax, [5, 1, 3, 5, 10, 20, 30, 50])
-  setting.downFileMax = defaultValue(val.downFileMax, [5, 1, 3, 5, 10, 20, 30])
+  setting.downFileMax = defaultValue(val.downFileMax, [5, 1, 2, 3, 4, 5])
   setting.downThreadMax = defaultValue(val.downThreadMax, [4, 1, 2, 4, 8, 16, 24, 32])
   setting.uploadGlobalSpeed = defaultNumberSub(val.uploadGlobalSpeed, 0, 0, 999)
   setting.uploadGlobalSpeedM = defaultValue(val.uploadGlobalSpeedM, ['MB', 'KB'])

@@ -91,20 +91,15 @@ const handleSelectDownSavePath = () => {
   <div class='settingcard'>
     <div class='settinghead'>:下载时 最大并行任务数</div>
     <div class='settingrow'>
-      <a-select tabindex='-1' :style="{ width: '252px' }" :model-value='settingStore.downFileMax'
-                :popup-container="'#SettingDiv'" @update:model-value='cb({ downFileMax: $event })'>
-        <a-option :value='1'>
-          同时下载 1 个文件
-          <template #suffix>大文件</template>
-        </a-option>
-        <a-option :value='3'>同时下载 3 个文件</a-option>
-        <a-option :value='5'>同时下载 5 个文件</a-option>
-        <a-option :value='10'>同时下载10个文件</a-option>
-        <a-option :value='20'>同时下载20个文件</a-option>
-        <a-option :value='30'>同时下载30个文件
-          <template #suffix>大量小文件</template>
-        </a-option>
-      </a-select>
+      <a-input-number
+        tabindex='-1' :style="{ width: '252px' }"
+        mode='button'
+        :min='1' :max='5' :step='1'
+        :model-value='settingStore.downFileMax'
+        @update:model-value='cb({ downFileMax: $event })'>
+        <template #prefix> 同时下载</template>
+        <template #suffix> 个文件</template>
+      </a-input-number>
     </div>
     <div class='settingspace'></div>
     <div class='settinghead'>:下载时 每个文件的线程</div>

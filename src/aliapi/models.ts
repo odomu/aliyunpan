@@ -36,6 +36,7 @@ export interface ICompilationList {
   category: string
   drive_id: string
   file_id: string
+  file_extension: string
   url: string
   expire_sec: number
   play_cursor: number

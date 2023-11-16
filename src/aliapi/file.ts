@@ -213,6 +213,7 @@ export default class AliFile {
           category: item.category,
           drive_id: item.drive_id,
           file_id: item.file_id,
+          file_extension: item.file_extension,
           url: item.url,
           expire_sec: GetOssExpires(item.url),
           play_cursor: Math.floor(item?.play_cursor || 0),
