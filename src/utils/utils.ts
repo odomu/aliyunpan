@@ -1,6 +1,9 @@
 import { deflateRawSync, inflateRawSync } from 'zlib'
 import crypto from 'crypto'
 import pkg from '../../package.json'
+import fs, { stat } from 'node:fs'
+import { getUserDataPath } from './electronhelper'
+import net from 'net'
 
 export function ArrayCopyReverse(arr: any[]): any[] {
   const copy: any[] = []
@@ -9,6 +12,7 @@ export function ArrayCopyReverse(arr: any[]): any[] {
   }
   return copy
 }
+
 export function ArrayCopy(arr: any[]): any[] {
   const copy: any[] = []
   for (let i = 0, maxi = arr.length; i < maxi; i++) {
@@ -57,7 +61,7 @@ export function BlobToString(body: Blob, encoding: string): Promise<string> {
   return new Promise((resolve) => {
     const reader = new FileReader()
     reader.readAsText(body, encoding)
-    reader.onload = function () {
+    reader.onload = function() {
       resolve((reader.result as string) || '')
     }
   })
@@ -67,7 +71,7 @@ export function BlobToBuff(body: Blob): Promise<ArrayBuffer | undefined> {
   return new Promise((resolve) => {
     const reader = new FileReader()
     reader.readAsArrayBuffer(body)
-    reader.onload = function () {
+    reader.onload = function() {
       resolve(reader.result as ArrayBuffer)
     }
   })
@@ -105,7 +109,7 @@ export function HanToPin(input: string): string {
 export function GetOssExpires(downUrl: string) {
   if (!downUrl || !downUrl.includes('x-oss-expires=')) return 0
   try {
-    
+
     let expires = downUrl.substring(downUrl.indexOf('x-oss-expires=') + 'x-oss-expires='.length)
     expires = expires.substring(0, expires.indexOf('&'))
     return parseInt(expires) - Math.floor(Date.now() / 1000)
@@ -131,3 +135,48 @@ export function md5Code(key: string) {
 export function getPkgVersion() {
   return pkg.version
 }
+
+export function createTmpFile(content: string, name: string) {
+  let tmpFile = ''
+  try {
+    // 生成临时文件路径
+    tmpFile = getUserDataPath(name)
+    // 向临时文件中写入数据
+    fs.writeFileSync(tmpFile, content)
+  } catch (err) {
+  }
+  return tmpFile
+}
+
+export function delTmpFile(tmpFilePath: string) {
+  stat(tmpFilePath, (err, stats) => {
+    if (err) {
+
+    } else {
+      fs.rmSync(tmpFilePath, { recursive: true })
+    }
+  })
+}
+
+export function portIsOccupied(port: number) {
+  return new Promise<number>((resolve, reject) => {
+    let server = net.createServer().listen(port)
+    server.on('listening', async () => {
+      console.log(`the server is runnint on port ${port}`)
+      server.close()
+      resolve(port) // 返回可用端口
+    })
+    server.on('error', (err: any) => {
+      console.log('err', err)
+      if (err.code === 'EADDRINUSE') {
+        resolve(portIsOccupied(port + 1)) // 如传入端口号被占用则 +1
+        console.log(`this port ${port} is occupied.try another.`)
+      } else {
+        console.log(err)
+        // reject(err)
+        resolve(port)
+      }
+    })
+  })
+}
+

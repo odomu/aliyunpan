@@ -10,15 +10,19 @@ import { WorkerPage } from './workerpage/workercmd'
 
 window.onerror = function (errorMessage, scriptURI, lineNo, columnNo, error) {
   try {
-    if (errorMessage && typeof errorMessage === 'string' && errorMessage.indexOf('ResizeObserver loop limit exceeded') >= 0) return true
-    DebugLog.mSaveDanger('onerror')
+    if (errorMessage
+      && typeof errorMessage === 'string'
+      && errorMessage.indexOf('ResizeObserver loop limit exceeded') >= 0
+      && errorMessage.indexOf('listen EADDRINUSE') >= 0
+      && errorMessage.indexOf('connect ENOENT') >= 0) return true
+    // DebugLog.mSaveDanger('onerror')
     if (typeof errorMessage === 'string') {
       DebugLog.mSaveDanger(errorMessage)
-      message.error('onerror ' + errorMessage, 8)
+      message.error('onerror ' + errorMessage)
     }
     if (error) {
       DebugLog.mSaveDanger('onerror', error)
-      message.error('onerror ' + error.message, 8)
+      message.error('onerror ' + error.message)
     }
   } catch {}
   return true
@@ -32,7 +36,7 @@ window.addEventListener('unhandledrejection', function (event) {
       return
     }
 
-    DebugLog.mSaveDanger('unhandledrejection')
+    // DebugLog.mSaveDanger('unhandledrejection')
     const reason = event.reason
     if (reason && reason.message) {
       DebugLog.mSaveDanger('unhandledrejection', reason)
