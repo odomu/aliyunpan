@@ -48,14 +48,12 @@ const handleSiteShareUrl = (event: any) => {
 }
 
 const handleClose = () => {
-  if (!webview.value) {
-    message.error('打开网页失败，请手动刷新网页')
-    return
-  }
   siteUrl.value = ''
-  webview.value.removeEventListener('new-window', handleSiteShareUrl)
-  content.value.removeChild(webview.value)
-  webview.value = {}
+  if (webview.value) {
+    webview.value.removeEventListener('new-window', handleSiteShareUrl)
+    content.value.removeChild(webview.value)
+    webview.value = {}
+  }
 }
 
 const handleRefresh = () => {
@@ -77,14 +75,19 @@ const handleRefresh = () => {
     <div class='toppanbtn'>
       <a-button type='text' size='small' tabindex='-1'
                 @click='handleRefresh'>
-        <i class='iconfont iconreload-1-icon' />刷新网页
+        <i class='iconfont iconreload-1-icon' />刷新
       </a-button>
     </div>
     <div class='toppanbtn'>
       <a-button type='text' size='small' tabindex='-1' @click='handleClose'>
-        <i class='iconfont iconclose' />关闭网页
+        <i class='iconfont iconclose' />关闭
       </a-button>
     </div>
+    <span class='toppanbtn'>
+      <a-button type='text' size='small' tabindex='-1' @click='openExternal(siteUrl)'>
+        <i class='iconfont icondebug' />浏览器打开
+      </a-button>
+    </span>
   </div>
   <div class='fullscroll' ref='content'>
     <a-card :bordered='false'

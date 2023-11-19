@@ -187,7 +187,8 @@ const handleScan = () => {
             <a-option value="backup">备份盘</a-option>
             <a-option value="resource">资源盘</a-option>
           </a-select>
-          <a-button type="primary" size="small" tabindex="-1" :loading="scanLoading" @click="handleScan">开始扫描空文件夹</a-button>
+          <a-button type='primary' size='small' tabindex='-1' :loading='scanLoading' @click='handleScan'>开始扫描
+          </a-button>
         </template>
       </a-row>
       <a-spin v-if="scanLoading || scanLoaded" :loading="scanLoading" tip="耐心等待，很慢的..." :style="{ width: '100%', height: treeHeight + 'px', overflow: 'hidden' }">

@@ -243,7 +243,7 @@ const handleScan = () => {
                   style='margin-right: 12px' title='把选中的文件放入回收站' @click='handleDelete'>删除选中
         </a-button>
         <a-button v-else type='primary' size='small' tabindex='-1' :loading='scanLoading' @click='handleScan'>
-          开始扫描大文件
+          开始扫描
         </a-button>
       </a-row>
       <a-spin v-if='scanLoading || scanLoaded' :loading='scanLoading' tip='耐心等待，很慢的...'
