@@ -226,11 +226,11 @@ const handleSelect = (file_id: string, event: any, isCtrl: boolean = false) => {
 
 const handleSelectAllCompilation = () => {
   videoSelectType.value = 'allComp'
-  PanDAL.aReLoadOneDirToShow('', 'video.compilation', true)
+  PanDAL.aReLoadOneDirToShow('', 'video.compilation', false)
 }
 const handleSelectRecentPlay = () => {
   videoSelectType.value = 'recent'
-  PanDAL.aReLoadOneDirToShow('', 'video.recentplay', true)
+  PanDAL.aReLoadOneDirToShow('', 'video.recentplay', false)
 }
 
 const handleOpenFile = (event: Event, file: IAliGetFileModel | undefined) => {
@@ -242,11 +242,13 @@ const handleOpenFile = (event: Event, file: IAliGetFileModel | undefined) => {
   if (!file) return
 
   if (file.isDir) {
-    PanDAL.aReLoadOneDirToShow('', file.compilation_id ? 'video' + file.name : file.file_id, true, file.album_id)
+    PanDAL.aReLoadOneDirToShow('', file.file_id, true, file.album_id)
     return
   }
 
-  if (!panfileStore.ListSelected.has(file.file_id)) panfileStore.mMouseSelect(file.file_id, false, false)
+  if (!panfileStore.ListSelected.has(file.file_id)) {
+    panfileStore.mMouseSelect(file.file_id, false, false)
+  }
   menuOpenFile(file)
 }
 
