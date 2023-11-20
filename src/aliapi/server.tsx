@@ -164,10 +164,7 @@ export default class ServerHttp {
           }
           const remoteVer = tagName.replaceAll('v', '').trim()
           const verInfo = this.dealText(response.data.body as string)
-          let verUrl = ''
-          if (updateData.url) {
-            verUrl = 'https://ghproxy.com/' + updateData.url
-          }
+          let verUrl = updateData.url
           if (remoteVer > configVer) {
             Modal.confirm({
               mask: true,
