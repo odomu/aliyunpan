@@ -173,6 +173,7 @@ export async function AriaChangeToLocal() {
             SetAriaOnline(false, 'local')
           }
         })
+        Aria2EngineLocal.setMaxListeners(0)
       }
       await Sleep(500)
       await Aria2EngineLocal.open()

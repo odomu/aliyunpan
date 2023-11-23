@@ -12,13 +12,16 @@ import AliShare from '../../aliapi/share'
 import { IAliShareAnonymous } from '../../aliapi/alimodels'
 import useMyTransferShareStore from './MyShareTransferStore'
 import AliTransferShareList from '../../aliapi/transfersharelist'
+import { IShareSiteGroupModel } from '../../store/serverstore'
 
 export default class ShareDAL {
 
   static async aLoadFromDB(): Promise<void> {
     const shareSiteList = await DB.getValueObject('shareSiteList')
+    const shareSiteGroupList = await DB.getValueObject('shareSiteGroupList')
     useServerStore().mSaveShareSiteList(shareSiteList as IShareSiteModel[])
-    ShareDAL.aReloadOtherShare()
+    useServerStore().mSaveShareSiteGroupList(shareSiteGroupList as IShareSiteGroupModel[])
+    await ShareDAL.aReloadOtherShare()
   }
 
 
@@ -177,5 +180,11 @@ export default class ShareDAL {
   static SaveShareSite(list: IShareSiteModel[]) {
     DB.saveValueObject('shareSiteList', list).catch(() => {})
     useServerStore().mSaveShareSiteList(list)
+  }
+
+  static SaveShareSiteGroup(list: IShareSiteGroupModel[]) {
+    DB.saveValueObject('shareSiteGroupList', list).catch(() => {
+    })
+    useServerStore().mSaveShareSiteGroupList(list)
   }
 }

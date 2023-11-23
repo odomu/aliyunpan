@@ -2,7 +2,7 @@ import { b64decode } from '../utils/format'
 import { getPkgVersion } from '../utils/utils'
 import axios, { AxiosResponse } from 'axios'
 import message from '../utils/message'
-import { IShareSiteModel, useServerStore } from '../store'
+import { IShareSiteGroupModel, IShareSiteModel, useServerStore } from '../store'
 import { Button, Modal, Space } from '@arco-design/web-vue'
 import { h } from 'vue'
 import { getAppNewPath, getResourcesPath, getUserDataPath, openExternal } from '../utils/electronhelper'
@@ -98,15 +98,33 @@ export default class ServerHttp {
       })
       .then(async (response: AxiosResponse) => {
         console.log('CheckConfigUpgrade', response)
-        // if (response.data.SIP) {
-        //   const SIP = B64decode(response.data.SIP)
-        //   if (SIP.length > 0) ServerHttp.baseApi = SIP
-        // }
+        let GroupList: IShareSiteGroupModel[] = []
+        if (response.data.GroupList && response.data.GroupList.length > 0) {
+          const list = response.data.GroupList
+          for (let item of list) {
+            GroupList.push({ group: item.group, title: item.title })
+          }
+        } else {
+          GroupList = [
+            { group: 'search', title: '搜索' },
+            { group: 'doc', title: '文档' },
+            { group: 'video', title: '影视' },
+            { group: 'nav', title: '导航' },
+            { group: 'bbs', title: '论坛' }
+          ]
+        }
+        ShareDAL.SaveShareSiteGroup(GroupList)
         if (response.data.SSList && response.data.SSList.length > 0) {
           const list: IShareSiteModel[] = []
-          for (let i = 0, maxi = response.data.SSList.length; i < maxi; i++) {
-            const item = response.data.SSList[i]
-            const add = { title: item.title, url: item.url, tip: item.tip }
+          const SSList = response.data.SSList
+          for (let item of SSList) {
+            const add: any = {
+              title: item.title,
+              url: item.url,
+              tip: item.tip,
+              group: item.group,
+              color: item.color
+            }
             if (add.url.length > 0) list.push(add)
           }
           ShareDAL.SaveShareSite(list)
@@ -233,7 +251,7 @@ export default class ServerHttp {
                       if (flag && tagName) {
                         const localVersion = getResourcesPath('localVersion')
                         if (localVersion) {
-                          writeFile(localVersion, tagName, async (err)=> {
+                          writeFile(localVersion, tagName, async (err) => {
                             if (err) {
                               return false
                             } else {
@@ -324,8 +342,8 @@ export default class ServerHttp {
       })
       .then(async (response: AxiosResponse) => {
         writeFile(resourcesPath, Buffer.from(response.data), (err) => {
-          if(err) {
-            message.error('下载更新失败，请检查【Resources文件夹】是否有写入权限',5, msgKey)
+          if (err) {
+            message.error('下载更新失败，请检查【Resources文件夹】是否有写入权限', 5, msgKey)
             return false
           }
         })

@@ -10,6 +10,7 @@ export interface IPageOffice {
   preview_url: string
   access_token: string
 }
+
 export interface IPageCode {
   user_id: string
   drive_id: string
@@ -49,15 +50,15 @@ export interface IPageVideo {
 
 export interface AppState {
   appTheme: string
-  
+
   appPage: string
-  
+
   appTab: string
-  
+
   appTabMenuMap: Map<string, string>
   appDark: boolean
   appShutDown: boolean
-  
+
 
   pageOffice?: IPageOffice
   pageCode?: IPageCode
@@ -74,7 +75,7 @@ const useAppStore = defineStore('app', {
     appTabMenuMap: new Map<string, string>([
       ['pan', 'wangpan'],
       ['down', 'DowningRight'],
-      ['share', 'OtherShareRight'],
+      ['share', 'ShareSiteRight'],
       ['rss', 'AppSame'],
       ['setting', '']
     ]),
@@ -92,7 +93,7 @@ const useAppStore = defineStore('app', {
     updateStore(partial: Partial<AppState>) {
       this.$patch(partial)
     },
-    
+
     toggleTheme(theme: string) {
       // console.log('toggleTheme', theme, this)
       this.appTheme = theme
@@ -102,7 +103,7 @@ const useAppStore = defineStore('app', {
         document.body.removeAttribute('arco-theme')
       }
     },
-    
+
     toggleDark(dark: boolean) {
       console.log('toggleDark', dark, this)
       this.appDark = dark
@@ -112,7 +113,7 @@ const useAppStore = defineStore('app', {
         document.body.removeAttribute('arco-theme')
       }
     },
-    
+
     togglePage(page: string) {
       if (page == this.appPage) return
       this.appPage = page
@@ -123,31 +124,31 @@ const useAppStore = defineStore('app', {
         appTabMenuMap: new Map<string, string>([
           ['pan', 'wangpan'],
           ['down', 'DowningRight'],
-          ['share', 'OtherShareRight'],
+          ['share', 'ShareSiteRight'],
           ['rss', 'AppSame'],
           ['setting', '']
         ])
       })
     },
-    
+
     toggleTab(tab: string) {
       if (this.appTab != tab) {
         this.appTab = tab
-        if (tab == 'setting') DebugLog.aLoadFromDB() 
+        if (tab == 'setting') DebugLog.aLoadFromDB()
         onHideRightMenu()
       }
     },
-    
+
     toggleTabMenu(tab: string, menu: string) {
       if (this.appTab != tab) {
         this.appTab = tab
-        if (tab == 'setting') DebugLog.aLoadFromDB() 
+        if (tab == 'setting') DebugLog.aLoadFromDB()
       }
       this.appTabMenuMap.set(tab, menu)
       if (tab == 'setting') document.getElementById(menu)?.scrollIntoView()
       onHideRightMenu()
     },
-    
+
     toggleTabSetting(tab: string, menu: string) {
       if (tab == this.appTab && this.appTabMenuMap.get(tab) == menu) return
       if (this.appTab != tab) {
@@ -157,7 +158,7 @@ const useAppStore = defineStore('app', {
         this.appTabMenuMap.set(tab, menu)
       }
     },
-    
+
     toggleTabNext() {
       switch (this.appTab) {
         case 'pan': {
@@ -174,7 +175,7 @@ const useAppStore = defineStore('app', {
         }
         case 'rss': {
           this.appTab = 'setting'
-          DebugLog.aLoadFromDB() 
+          DebugLog.aLoadFromDB()
           break
         }
         case 'setting': {
@@ -184,13 +185,13 @@ const useAppStore = defineStore('app', {
       }
       onHideRightMenu()
     },
-    
+
     toggleTabNextMenu() {
-      const next = function (map: Map<string, string>, tab: string, menuList: string[]) {
+      const next = function(map: Map<string, string>, tab: string, menuList: string[]) {
         const menu = map.get(tab)!
         for (let i = 0, maxi = menuList.length; i < maxi; i++) {
           if (menuList[i] == menu) {
-            
+
             if (i + 1 >= menuList.length) map.set(tab, menuList[0])
             else map.set(tab, menuList[i + 1])
           }
@@ -207,15 +208,15 @@ const useAppStore = defineStore('app', {
           break
         }
         case 'share': {
-          next(this.appTabMenuMap, this.appTab, ['OtherShareRight', 'MyShareRight', 'MyFollowingRight', 'OtherFollowingRight', 'ShareSiteRight'])
+          next(this.appTabMenuMap, this.appTab, ['ShareSiteRight', 'OtherShareRight', 'MyShareRight', 'MyTransferShareRight', 'MyFollowingRight', 'OtherFollowingRight'])
           break
         }
         case 'rss': {
-          next(this.appTabMenuMap, this.appTab, ['AppSame', 'RssXiMa', 'RssRename', 'RssJiaMi', 'RssScanClean', 'RssScanSame', 'RssScanPunish', 'RssScanEnmpty', 'RssMakeFileTree', 'RssMakeTreeMap', 'RssDriveCopy', 'RssUserCopy'])
+          next(this.appTabMenuMap, this.appTab, ['AppSame', 'RssXiMa', 'RssRename', 'RssScanClean', 'RssScanSame', 'RssScanPunish', 'RssScanEnmpty', 'RssMakeFileTree', 'RssMakeTreeMap', 'RssDriveCopy', 'RssUserCopy'])
           break
         }
         case 'setting': {
-          next(this.appTabMenuMap, this.appTab, ['SettingUI', 'SettingDown', 'SettingPan', 'SettingDebug', 'SettingAria', 'SettingLog'])
+          next(this.appTabMenuMap, this.appTab, ['SettingUI', 'SettingAccount', 'SettingDown', 'SettingPan', 'SettingDebug', 'SettingAria', 'SettingWebDav', 'SettingLog'])
           const menu = this.appTabMenuMap.get('setting')!
           document.getElementById(menu)?.scrollIntoView()
           break
