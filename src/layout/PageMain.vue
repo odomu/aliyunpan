@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang='ts'>
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import {
   KeyboardState,
@@ -167,14 +167,14 @@ const handleCheckVer = () => {
 }
 </script>
 <template>
-  <a-layout style="height: 100vh" draggable="false">
-    <a-layout-header id="xbyhead" draggable="false">
-      <div id="xbyhead2" class="q-electron-drag">
-        <a-button v-show="appStore.appTab === 'pan'" type="text" size="small" @click="handlePanVisible">
-           <i class="iconfont iconmenuon" v-if="panVisible"/>
-           <i class="iconfont iconmenuoff" v-else/>
+  <a-layout style='height: 100vh' draggable='false'>
+    <a-layout-header id='xbyhead' draggable='false'>
+      <div id='xbyhead2' class='q-electron-drag'>
+        <a-button v-show="appStore.appTab === 'pan'" type='text' size='small' @click='handlePanVisible'>
+          <i class='iconfont iconmenuon' v-if='panVisible' />
+          <i class='iconfont iconmenuoff' v-else />
         </a-button>
-        <div class="title">阿里云盘</div>
+        <div class='title'>阿里云盘</div>
 
         <a-menu mode='horizontal' :selected-keys='[appStore.appTab]'
                 @update:selected-keys='appStore.toggleTab($event[0])'>
@@ -184,25 +184,26 @@ const handleCheckVer = () => {
           <a-menu-item key='rss' title='Alt+4'>插件</a-menu-item>
         </a-menu>
 
-        <div class="flexauto"></div>
+        <div class='flexauto'></div>
         <ShutDown />
         <UserInfo />
         <UserLogin />
-        <a-button type="text" tabindex="-1" title="设置 Alt+6" :class="appStore.appTab == 'setting' ? 'active' : ''" @click="appStore.toggleTab('setting')">
-          <i class="iconfont iconsetting"></i>
+        <a-button type='text' tabindex='-1' title='设置 Alt+6' :class="appStore.appTab == 'setting' ? 'active' : ''"
+                  @click="appStore.toggleTab('setting')">
+          <i class='iconfont iconsetting'></i>
         </a-button>
-        <a-button type="text" tabindex="-1" title="最小化 Alt+M" @click="handleMinClick">
-          <i class="iconfont iconzuixiaohua"></i>
+        <a-button type='text' tabindex='-1' title='最小化 Alt+M' @click='handleMinClick'>
+          <i class='iconfont iconzuixiaohua'></i>
         </a-button>
-        <a-button type="text" tabindex="-1" title="最大化 Alt+Enter" @click="handleMaxClick">
-          <i class="iconfont iconfullscreen"></i>
+        <a-button type='text' tabindex='-1' title='最大化 Alt+Enter' @click='handleMaxClick'>
+          <i class='iconfont iconfullscreen'></i>
         </a-button>
-        <a-button type="text" tabindex="-1" title="关闭 Alt+F4" @click="handleHideClick">
-          <i class="iconfont iconclose"></i>
+        <a-button type='text' tabindex='-1' title='关闭 Alt+F4' @click='handleHideClick'>
+          <i class='iconfont iconclose'></i>
         </a-button>
       </div>
     </a-layout-header>
-    <a-layout-content id="xbybody">
+    <a-layout-content id='xbybody'>
       <a-tabs type='text' :direction="'horizontal'" class='hidetabs' :justify='true' :active-key='appStore.appTab'>
         <a-tab-pane key='pan' title='1'>
           <Pan :visible='panVisible' />
@@ -221,83 +222,109 @@ const handleCheckVer = () => {
         </a-tab-pane>
       </a-tabs>
     </a-layout-content>
-    <a-layout-footer id="xbyfoot" draggable="false">
-      <div id="footer2">
-        <div v-if="footStore.loadingInfo" id="footLoading" class="footerBar fix" style="padding: 0 8px 0 0">
-          <div class="arco-spin">
-            <div class="arco-spin-icon">
-              <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" class="arco-icon arco-icon-loading arco-icon-spin" stroke-width="4" stroke-linecap="butt" stroke-linejoin="miter">
-                <path d="M42 24c0 9.941-8.059 18-18 18S6 33.941 6 24 14.059 6 24 6"></path>
+    <a-layout-footer id='xbyfoot' draggable='false'>
+      <div id='footer2'>
+        <div v-if='footStore.loadingInfo' id='footLoading' class='footerBar fix' style='padding: 0 8px 0 0'>
+          <div class='arco-spin'>
+            <div class='arco-spin-icon'>
+              <svg viewBox='0 0 48 48' fill='none' xmlns='http://www.w3.org/2000/svg' stroke='currentColor'
+                   class='arco-icon arco-icon-loading arco-icon-spin' stroke-width='4' stroke-linecap='butt'
+                   stroke-linejoin='miter'>
+                <path d='M42 24c0 9.941-8.059 18-18 18S6 33.941 6 24 14.059 6 24 6'></path>
               </svg>
             </div>
           </div>
-          <span style="margin-right: 8px">{{ footStore.loadingInfo }}</span>
+          <span style='margin-right: 8px'>{{ footStore.loadingInfo }}</span>
         </div>
-        <div class="footinfo">
+        <div class='footinfo'>
           {{ footStore.GetSpaceInfo }}
         </div>
-        <div class="flexauto">
-          <audio id="ddsound" src="notify.wav"></audio>
+        <div class='flexauto'>
+          <audio id='ddsound' src='notify.wav'></audio>
         </div>
         <div :style="{ display: 'flex', paddingRight: '16px', flexShrink: 0, flexGrow: 0 }">
-          <div class="flexauto"></div>
-          <div class="footinfo">
+          <div class='flexauto'></div>
+          <div class='footinfo'>
             {{ footStore.GetInfo }}
           </div>
-          <div v-if="footStore.audioUrl" style="width: 300px; display: flex; overflow: hidden">
-            <audio controls autoplay style="width: 360px; height: 24px; margin: 0 -50px 0 -12px" :src="footStore.audioUrl">no audio</audio>
+          <div v-if='footStore.audioUrl' style='width: 300px; display: flex; overflow: hidden'>
+            <audio controls autoplay style='width: 360px; height: 24px; margin: 0 -50px 0 -12px'
+                   :src='footStore.audioUrl'>no audio
+            </audio>
           </div>
-          <div v-if="footStore.audioUrl" class="footerBar fix" title="关闭音频预览" style="cursor: pointer" @click.stop="handleAudioStop()">
-            <i class="iconfont iconclose" />
+          <div v-if='footStore.audioUrl' class='footerBar fix' title='关闭音频预览' style='cursor: pointer'
+               @click.stop='handleAudioStop()'>
+            <i class='iconfont iconclose' />
           </div>
 
-          <div class="footerBar fix" v-show="footStore.uploadTotalSpeed" >
-            <i class="iconfont iconshangchuansudu" />
-            <span id="footUploadSpeed" class="footspeedstr">
+          <div class='footerBar fix' v-show='footStore.uploadTotalSpeed'>
+            <i class='iconfont iconshangchuansudu' />
+            <span id='footUploadSpeed' class='footspeedstr'>
               {{ footStore.uploadTotalSpeed }}
             </span>
           </div>
 
-          <div class="footerBar fix" v-show="footStore.downloadTotalSpeed" >
-            <i class="iconfont iconxiazaisudu" />
-            <span id="footDownSpeed" class="footspeedstr">
+          <div class='footerBar fix' v-show='footStore.downloadTotalSpeed'>
+            <i class='iconfont iconxiazaisudu' />
+            <span id='footDownSpeed' class='footspeedstr'>
               {{ footStore.downloadTotalSpeed }}
             </span>
           </div>
 
-          <div class="footerBar fix">
-            <span class="footAria" title="Aria已连接" v-if="footStore.ariaInfo"> {{ footStore.ariaInfo }} </span>
-            <span class="footAria" title="Aria已离线" v-else> Aria ⚯ Offline </span>
+          <div class='footerBar fix'>
+            <span class='footAria' title='Aria已连接' v-if='footStore.ariaInfo'> {{ footStore.ariaInfo }} </span>
+            <span class='footAria' title='Aria已离线' v-else> Aria ⚯ Offline </span>
           </div>
 
-          <div class="footerBar fix" style="padding: 0 8px; cursor: pointer" @click="handleCheckVer">{{ getAppVersion }}</div>
+          <div class='footerBar fix' style='padding: 0 8px; cursor: pointer' @click='handleCheckVer'>
+            {{ getAppVersion }}
+          </div>
 
-          <a-popover v-model:popup-visible="footStore.taskVisible" trigger="click" position="top" class="asynclist">
-            <div class="footerBar fix" style="cursor: pointer">
+          <a-popover v-model:popup-visible='footStore.taskVisible' trigger='click' position='top' class='asynclist'>
+            <div class='footerBar fix' style='cursor: pointer'>
               <span :class="footStore.GetIsRunning ? 'shake' : ''">
-                <i class="iconfont icontongzhiblue" />
+                <i class='iconfont icontongzhiblue' />
               </span>
               <span>异步通知</span>
             </div>
             <template #content>
-              <div style="width: 360px; min-height: 120px; max-height: 50vh; overflow-y: auto; overflow-x: hidden">
-                <div v-for="item in footStore.taskList" :key="item.key" class="asynclistitem">
-                  <div class="asynclistitem-content">
-                    <div v-if="item.status == 'error'" class="asynclistitem-name danger" :title="item.title">{{ item.title }}</div>
-                    <div v-else class="asynclistitem-name" :title="item.title">{{ item.title }}</div>
-                    <span v-if="item.status == 'running'" class="asynclistitem-progress asynclistitem-icon-running" title="执行中"><i class="iconfont iconhourglass" />{{ item.usetime }}</span>
-                    <span v-if="item.status == 'success'" class="asynclistitem-progress asynclistitem-icon-success" title="成功"><i class="iconfont iconcheck" />{{ item.usetime }}</span>
-                    <span v-if="item.status == 'error'" class="asynclistitem-progress asynclistitem-icon-error" title="失败"><i class="iconfont iconclose" />{{ item.usetime }}</span>
+              <div style='width: 360px; min-height: 120px; max-height: 50vh; overflow-y: auto; overflow-x: hidden'>
+                <div v-for='item in footStore.taskList' :key='item.key' class='asynclistitem'>
+                  <div class='asynclistitem-content'>
+                    <div v-if="item.status == 'error'" class='asynclistitem-name danger' :title='item.title'>
+                      {{ item.title }}
+                    </div>
+                    <div v-else class='asynclistitem-name' :title='item.title'>{{ item.title }}</div>
+                    <span v-if="item.status == 'running'" class='asynclistitem-progress asynclistitem-icon-running'
+                          title='执行中'><i class='iconfont iconhourglass' />{{ item.usetime }}</span>
+                    <span v-if="item.status == 'success'" class='asynclistitem-progress asynclistitem-icon-success'
+                          title='成功'><i class='iconfont iconcheck' />{{ item.usetime }}</span>
+                    <span v-if="item.status == 'error'" class='asynclistitem-progress asynclistitem-icon-error'
+                          title='失败'><i class='iconfont iconclose' />{{ item.usetime }}</span>
                   </div>
-                  <div class="asynclistitem-operation">
-                    <a-button type="text" size="mini" @click.stop="handleAsyncDelete(item.key)">删除</a-button>
+                  <div class='asynclistitem-operation'>
+                    <a-button type='text' size='mini' @click.stop='handleAsyncDelete(item.key)'>删除</a-button>
                   </div>
                 </div>
-                <a-empty v-if="footStore.taskList.length == 0" style="margin-top: 24px">没有正在执行的异步任务</a-empty>
+                <a-empty v-if='footStore.taskList.length == 0' style='margin-top: 24px'>没有正在执行的异步任务</a-empty>
               </div>
             </template>
           </a-popover>
-          <div class="footerBar fix" style="margin: 0; cursor: pointer" @click="handleHelpPage">帮助文档</div>
+          <a-popover v-model:popup-visible='footStore.sponsorVisible' trigger='click' position='top' class='asynclist'>
+            <div class='footerBar fix' style='cursor: pointer'>
+              <i class='iconfont iconbiaozhang' />
+              <span>赞赏一下</span>
+            </div>
+            <template #content>
+              <div class='flex flex-col' style='text-align: center;width: 280px;height: 280px'>
+                <img src='/images/wexin_reward.png' alt='赞赏码'>
+              </div>
+            </template>
+          </a-popover>
+          <div class='footerBar fix' style='margin: 0; cursor: pointer' @click='handleHelpPage'>
+            <i class='iconfont iconrss' />
+            项目地址
+          </div>
         </div>
       </div>
       <MyModal />
@@ -315,9 +342,11 @@ const handleCheckVer = () => {
   background: var(--color-menu-light-bg);
   box-shadow: var(--topshadow) 0px 2px 12px 0px;
 }
+
 .arco-avatar-circle .arco-avatar-image {
   line-height: 100% !important;
 }
+
 #xbyhead2 {
   display: flex;
   flex-wrap: nowrap;
@@ -359,45 +388,55 @@ const handleCheckVer = () => {
 #xbyhead2 .arco-btn-text {
   color: var(--color-text-2);
 }
+
 #xbyhead2 .arco-btn-text:hover,
 #xbyhead2 .arco-btn-text.active {
   color: rgb(var(--primary-6));
   background-color: var(--color-fill-2);
 }
+
 #xbyhead2 .iconfont {
   font-size: 24px;
 }
+
 #xbyhead2 .arco-menu-horizontal {
   width: 420px;
   height: 37px;
   line-height: 24px;
 }
+
 #xbyhead2 .arco-menu-horizontal .arco-menu-inner {
   padding: 0;
   overflow: visible;
 }
+
 #xbyhead2 .arco-menu-horizontal .arco-menu-item {
   line-height: 24px;
   padding: 0;
   min-width: 56px;
   text-align: center;
 }
+
 #xbyhead2 .arco-menu-horizontal .arco-menu-item.arco-menu-selected {
   font-size: 15px;
 }
+
 #xbyhead2 .arco-menu-selected-label {
   bottom: -7px;
   left: 0;
   right: 0;
   height: 2px;
 }
+
 #xbybody {
   padding: 0 3px 0 2px;
   height: calc(100% - 42px - 24px - 20px);
 }
+
 .hidetabs {
   height: 100%;
 }
+
 .hidetabs > .ant-tabs-nav {
   height: 0 !important;
   display: none !important;
@@ -406,10 +445,12 @@ const handleCheckVer = () => {
 .hidetabs .ant-tabs-content {
   height: 100%;
 }
+
 .hidetabs > .arco-tabs-content {
   padding-top: 0 !important;
   padding-bottom: 1px !important;
 }
+
 .hidetabs > .arco-tabs-nav {
   width: 0 !important;
   height: 0 !important;
@@ -444,6 +485,7 @@ a {
   justify-content: stretch;
   align-items: center;
 }
+
 .footerBar {
   flex: auto 1;
   flex-shrink: 0;
@@ -457,16 +499,20 @@ a {
   justify-content: stretch;
   align-items: center;
 }
+
 .footerBar.fix {
   flex-grow: 0;
 }
+
 .footerBar:hover {
   background-color: #569dff;
 }
+
 .footerBar .iconfont {
   font-size: 14px;
   line-height: 24px;
 }
+
 #footLoading .arco-icon-loading {
   color: hsla(0, 0%, 100%, 0.85);
   width: 14px;
@@ -492,15 +538,18 @@ a {
   padding: 0 8px;
   opacity: 0.9;
 }
+
 body[arco-theme='dark'] .footinfo {
   opacity: 0.8;
 }
+
 .footuploadlist .arco-popover-popup-content,
 .footdownlist .arco-popover-popup-content,
 .asynclist .arco-popover-popup-content {
   padding: 0 8px 12px 8px;
   margin-right: 8px;
 }
+
 .asynclistitem {
   position: relative;
   display: flex;
@@ -508,6 +557,7 @@ body[arco-theme='dark'] .footinfo {
   box-sizing: border-box;
   margin-top: 12px;
 }
+
 .asynclistitem-content {
   display: flex;
   flex-wrap: nowrap;
@@ -521,14 +571,17 @@ body[arco-theme='dark'] .footinfo {
   border-radius: var(--border-radius-small);
   transition: background-color 0.1s cubic-bezier(0, 0, 1, 1);
 }
+
 .asynclistitem-operation {
   margin-left: 12px;
   color: var(--color-text-2);
   font-size: 12px;
 }
+
 .asynclistitem-operation .arco-btn {
   padding: 0 6px;
 }
+
 .asynclistitem-name {
   display: flex;
   flex: 1;
@@ -541,6 +594,7 @@ body[arco-theme='dark'] .footinfo {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
 .asynclistitem-progress {
   position: relative;
   margin-left: auto;
@@ -560,6 +614,7 @@ body[arco-theme='dark'] .footinfo {
   font-size: 14px;
   line-height: 14px;
 }
+
 .asynclistitem-icon-error {
   color: rgb(var(--danger-6));
   font-size: 14px;
@@ -571,6 +626,7 @@ body[arco-theme='dark'] .footinfo {
   border: none;
   outline: none;
 }
+
 #footer2 audio::-webkit-media-controls-panel {
   border-radius: 0;
   border: none;
@@ -582,6 +638,7 @@ body[arco-theme='dark'] .footinfo {
   background: var(--foot-bg);
   border-radius: 4px;
 }
+
 #footer2 audio::-webkit-media-controls-current-time-display,
 #footer2 audio::-webkit-media-controls-time-remaining-display {
   text-shadow: unset;
@@ -593,6 +650,7 @@ body[arco-theme='dark'] .footinfo {
 body[arco-theme='dark'] #footer2 audio::-webkit-media-controls-panel {
   filter: invert(0);
 }
+
 body[arco-theme='dark'] #footer2 audio::-webkit-media-controls-current-time-display,
 body[arco-theme='dark'] #footer2 audio::-webkit-media-controls-time-remaining-display {
   color: #ffffff !important;
@@ -601,6 +659,7 @@ body[arco-theme='dark'] #footer2 audio::-webkit-media-controls-time-remaining-di
 .arco-upload-list-item-file-icon {
   margin-right: 4px !important;
 }
+
 .footspeedstr {
   min-width: 52px;
   display: inline-block;
@@ -616,6 +675,7 @@ body[arco-theme='dark'] #footer2 audio::-webkit-media-controls-time-remaining-di
   animation-iteration-count: infinite;
   animation-delay: 0.5s;
 }
+
 @keyframes upAnimation {
   0% {
     transform: rotate(0deg);

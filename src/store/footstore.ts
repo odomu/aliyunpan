@@ -25,6 +25,7 @@ export interface AsyncModel {
 export interface FootState {
 
   taskVisible: boolean
+  sponsorVisible: boolean
 
   taskList: AsyncModel[]
 
@@ -55,6 +56,7 @@ export interface FootState {
 const useFootStore = defineStore('foot', {
   state: (): FootState => ({
     taskVisible: false,
+    sponsorVisible: false,
     taskList: [],
     audioUrl: '',
     rightWidth: 301,
