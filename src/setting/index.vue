@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted } from 'vue'
+import { useAppStore } from '../store'
 import SettingPlay from './SettingPlay.vue'
 import SettingPan from './SettingPan.vue'
 import SettingUI from './SettingUI.vue'
@@ -9,8 +10,8 @@ import SettingDebug from './SettingDebug.vue'
 import SettingUpload from './SettingUpload.vue'
 import SettingAria from './SettingAria.vue'
 import SettingLog from './SettingLog.vue'
-import { useAppStore } from '../store'
 import SettingProxy from './SettingProxy.vue'
+import SettingWebDav from './SettingWebDav.vue'
 
 const appStore = useAppStore()
 
@@ -38,6 +39,7 @@ onMounted(() => {
   observer.observe(document.getElementById('SettingPlay')!)
   observer.observe(document.getElementById('SettingPan')!)
   observer.observe(document.getElementById('SettingAria')!)
+  observer.observe(document.getElementById('SettingWebDav')!)
   observer.observe(document.getElementById('SettingDebug')!)
   observer.observe(document.getElementById('SettingProxy')!)
   observer.observe(document.getElementById('SettingLog')!)
@@ -51,7 +53,7 @@ onUnmounted(() => {
 <template>
   <a-layout style="height: 100%">
     <a-layout-sider hide-trigger :width="158" class="xbyleft" tabindex="-1" @keydown.tab.prevent="() => true">
-      <div class="headdesc">APP 设置项</div>
+      <div class='headdesc'>软件 设置项</div>
       <a-menu :selected-keys="[appStore.GetAppTabMenu]" :style="{ width: '100%' }" class="xbyleftmenu" @update:selected-keys="appStore.toggleTabMenu('setting', $event[0])">
         <a-menu-item key="SettingUI">
           <template #icon><i class="iconfont iconui" /></template>
@@ -89,6 +91,10 @@ onUnmounted(() => {
           <template #icon><i class="iconfont iconchuanshu" /></template>
           远程Aria
         </a-menu-item>
+        <a-menu-item key='SettingWebDav'>
+          <template #icon><i class='iconfont iconchuanshu2' /></template>
+          WebDav
+        </a-menu-item>
         <a-menu-item key="SettingLog">
           <template #icon><i class="iconfont icondebug" /></template>
           运行日志
@@ -99,7 +105,6 @@ onUnmounted(() => {
       <div id="SettingDiv" style="position: relative">
         <div id="SettingUI">
           <div>
-            <div style="height: 10px"></div>
             <a-divider orientation="center" class="settinghr">应用设置</a-divider>
           </div>
           <SettingUI />
@@ -152,6 +157,12 @@ onUnmounted(() => {
             <a-divider orientation="center" class="settinghr">远程Aria</a-divider>
           </div>
           <SettingAria />
+        </div>
+        <div id='SettingWebDav'>
+          <div>
+            <a-divider orientation='center' class='settinghr'>WebDav</a-divider>
+          </div>
+          <SettingWebDav />
         </div>
         <div id="SettingLog">
           <div>

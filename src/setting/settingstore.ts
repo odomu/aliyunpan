@@ -132,7 +132,14 @@ export interface SettingState {
 
   downAutoStart: boolean
 
-
+  webDavEnable: boolean
+  webDavMountLocal: boolean
+  webDavHost: string
+  webDavPort: number
+  webDavPath: string
+  webDavRights: string
+  webDavUsername: string
+  webDavPassword: string
 
   debugCacheSize: string
 
@@ -237,6 +244,15 @@ const setting: SettingState = {
   downFinishAudio: true,
   downAutoStart: true,
 
+  webDavEnable: false,
+  webDavMountLocal: false,
+  webDavHost: '127.0.0.1',
+  webDavPort: 2000,
+  webDavPath: '',
+  webDavRights: '',
+  webDavUsername: '',
+  webDavPassword: '',
+
   debugCacheSize: '',
   debugFileListMax: 3000,
   debugFavorListMax: 1000,
@@ -326,6 +342,15 @@ function _loadSetting(val: any) {
   setting.ariaLoading = false
   setting.downFinishAudio = defaultBool(val.downFinishAudio, true)
   setting.downAutoStart = defaultBool(val.downAutoStart, true)
+
+  setting.webDavEnable = defaultBool(val.webDavEnable, false)
+  setting.webDavMountLocal = defaultBool(val.webDavMountLocal, false)
+  setting.webDavHost = defaultString(val.webDavHost, '127.0.0.1')
+  setting.webDavPort = defaultNumber(val.webDavPort, 2000)
+  setting.webDavPath = defaultString(val.webDavPath, '')
+  setting.webDavRights = defaultString(val.webDavRights, '')
+  setting.webDavUsername = defaultString(val.webDavUsername, '')
+  setting.webDavPassword = defaultString(val.webDavPassword, '')
 
   setting.debugCacheSize = defaultString(val.debugCacheSize, '')
   setting.debugFileListMax = defaultNumberSub(val.debugFileListMax, 3000, 3000, 10000)

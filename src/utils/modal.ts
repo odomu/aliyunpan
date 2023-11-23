@@ -99,3 +99,7 @@ export function modalUpload(file_id: string, filelist: string[], ispic: boolean 
 export function modalDownload(istree: boolean) {
   useModalStore().showModal('download', { istree })
 }
+
+export function modalUpdateLog() {
+  useModalStore().showModal('showupdatelog', {})
+}

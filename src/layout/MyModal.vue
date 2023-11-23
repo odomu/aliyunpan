@@ -24,6 +24,7 @@ import AlphaModal from '../pan/topbtns/AlphaModal.vue'
 import UploadModal from '../pan/topbtns/UploadModal.vue'
 import DownloadModal from '../pan/topbtns/DownloadModal.vue'
 import MoveToAlbumModal from '../pan/topbtns/MoveToAlbumModal.vue'
+import ShowUpdateLog from '../pan/topbtns/ShowUpdateLog.vue'
 
 export default defineComponent({
   components: {
@@ -49,7 +50,8 @@ export default defineComponent({
     ArchiveModal,
     ArchivePasswordModal,
     UploadModal,
-    DownloadModal
+    DownloadModal,
+    ShowUpdateLog
   },
   setup() {
     const modalStore = useModalStore()
@@ -133,6 +135,8 @@ export default defineComponent({
                      :category='modalStore.modalData.category'
                      :extFilter='modalStore.modalData.extFilter'
                      :callback='modalStore.modalData.callback' />
+
+  <ShowUpdateLog :visible="modalStore.modalName == 'showupdatelog'" />
 </template>
 <style>
 .modalclass .arco-modal-body {

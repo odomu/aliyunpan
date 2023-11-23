@@ -1,7 +1,7 @@
 {
   "name": "alixby",
   "description": "阿里云盘小白羊",
-  "version": "3.23.111811",
+  "version": "3.23.112223",
   "main": "dist/electron/main/index.js",
   "author": {
     "name": "Odomu",
@@ -26,6 +26,7 @@
     "@types/fast-levenshtein": "^0.0.3",
     "@types/howler": "^2.2.10",
     "@types/lodash": "^4.14.200",
+    "@types/markdown-it": "^13.0.7",
     "@types/node": "^20.8.8",
     "@types/secp256k1": "^4.0.5",
     "@types/uuid": "^9.0.6",
@@ -54,6 +55,7 @@
     "jschardet": "^3.0.0",
     "less": "^4.2.0",
     "lodash": "^4.17.21",
+    "markdown-it": "^13.0.2",
     "pinia": "^2.1.7",
     "secp256k1": "^5.0.0",
     "socks-proxy-agent": "^8.0.2",
@@ -67,7 +69,8 @@
     "vite-plugin-electron": "^0.9.3",
     "vite-plugin-resolve": "^2.5.1",
     "vue": "^3.3.7",
-    "vue-tsc": "^1.8.22"
+    "vue-tsc": "^1.8.22",
+    "webdav-server": "^2.6.2"
   },
   "debug": {
     "env": {
