@@ -11,6 +11,7 @@ import DebugLog from '../utils/debuglog'
 import { existsSync, readFileSync, rmSync, writeFile } from 'fs'
 import { execFile, SpawnOptions } from 'child_process'
 import path from 'path'
+import MarkdownIt from 'markdown-it'
 
 const { shell } = require('electron')
 
@@ -135,6 +136,29 @@ export default class ServerHttp {
       })
   }
 
+  static compareVer(version1: string, version2: string): number {
+    // Split version strings into arrays of numbers
+    const v1Parts = version1.split('.').map(Number)
+    const v2Parts = version2.split('.').map(Number)
+
+    // Pad the shorter version with zeros to make their lengths equal
+    const maxLength = Math.max(v1Parts.length, v2Parts.length)
+    v1Parts.push(...Array(maxLength - v1Parts.length).fill(0))
+    v2Parts.push(...Array(maxLength - v2Parts.length).fill(0))
+
+    // Compare each part of the version numbers
+    for (let i = 0; i < maxLength; i++) {
+      if (v1Parts[i] > v2Parts[i]) {
+        return 1
+      } else if (v1Parts[i] < v2Parts[i]) {
+        return -1
+      }
+    }
+
+    // Version numbers are equal
+    return 0
+  }
+
   static async CheckUpgrade(showMessage: boolean = true): Promise<void> {
     axios
       .get(ServerHttp.updateUrl, {
@@ -169,10 +193,14 @@ export default class ServerHttp {
             && fileData.name.endsWith('.dmg')) {
             updateData = fileData
           } else if (fileData.name.endsWith('.asar')) {
-            asarFileUrl = 'https://ghproxy.com/' + fileData.url
+            asarFileUrl = fileData.url
+            if (useSettingStore().uiUpdateProxyUrl.length > 0) {
+              asarFileUrl = useSettingStore().uiUpdateProxyUrl + '/' + asarFileUrl
+            }
           }
         }
-        if (tagName) {
+        const remoteVer = tagName.replaceAll('v', '').trim()
+        if (remoteVer) {
           let configVer = getPkgVersion().replaceAll('v', '').trim()
           if (process.platform !== 'linux') {
             let localVersion = getResourcesPath('localVersion')
@@ -180,18 +208,22 @@ export default class ServerHttp {
               configVer = readFileSync(localVersion, 'utf-8').replaceAll('v', '').trim()
             }
           }
-          const remoteVer = tagName.replaceAll('v', '').trim()
-          const verInfo = this.dealText(response.data.body as string)
+          const markdown = new MarkdownIt({
+            html: true,
+            linkify: true,
+            typographer: true
+          })
+          const verInfo = markdown.render(response.data.body as string)
           let verUrl = updateData.url
-          if (useSettingStore().uiUpdateProxyUrl) {
+          if (useSettingStore().uiUpdateProxyUrl.length > 0) {
             verUrl = useSettingStore().uiUpdateProxyUrl + '/' + verUrl
           }
-          if (remoteVer > configVer) {
+          if (this.compareVer(remoteVer, configVer) > 0) {
             Modal.confirm({
               mask: true,
               alignCenter: true,
               title: () => h('div', {
-                innerHTML: `有新版本<span class='vertip'>${tagName}</span><i class='verupdate'></i>`,
+                innerHTML: `有新版本<span class='vertip'>${remoteVer}</span><i class='verupdate'></i>`,
                 class: { vermodalhead: true },
                 style: { maxWidth: '540px' }
               }),
@@ -251,10 +283,10 @@ export default class ServerHttp {
                       const msgKey = 'download_' + Date.now().toString()
                       const flag = await this.AutoDownload(asarFileUrl, html_url, updateData.name, true, msgKey)
                       // 更新本地版本号
-                      if (flag && tagName) {
+                      if (flag && remoteVer) {
                         const localVersion = getResourcesPath('localVersion')
                         if (localVersion) {
-                          writeFile(localVersion, tagName, async (err) => {
+                          writeFile(localVersion, remoteVer, async (err) => {
                             if (err) {
                               return false
                             } else {
@@ -281,48 +313,6 @@ export default class ServerHttp {
         showMessage && message.info('检查更新失败，请检查网络是否正常')
         DebugLog.mSaveDanger('CheckUpgrade', err)
       })
-  }
-
-  static dealText(context: string): string {
-    let splitTextArr = context.trim().split(/\r\n/g)
-    let resultTextArr: string[] = []
-    splitTextArr.forEach((item, i) => {
-      let links = item.match(/!?\[.+?\]\(https?:\/\/.+\)/g)
-      // 处理链接
-      if (links != null) {
-        for (let index = 0; index < links.length; index++) {
-          const text_link = links[index].match(/[^!\[\(\]\)]+/g)//提取文字和链接
-          if (text_link) {
-            if (links[index][0] == '!') { //解析图片
-              item = item.replace(links[index], '<img src="' + text_link[1] + '" loading="lazy" alt="' + text_link[0] + '" />')
-            } else { //解析超链接
-              item = item.replace(links[index], `<i>【${text_link[0]}】</i>`)
-            }
-          }
-        }
-      }
-      if (item.indexOf('- ')) { // 无序列表
-        item = item.replace(/.*-\s+(.*)/g, '<strong>$1</strong>')
-      }
-      if (item.indexOf('* ')) { // 无序列表
-        item = item.replace(/.*\*\s+(.*)/g, '<strong>$1</strong>')
-      }
-      if (item.includes('**')) {
-        item = item.replaceAll(/\*\*/g, '')
-      }
-      if (item.startsWith('# ')) { // 1 级标题（h1）
-        resultTextArr.push(`<h1>${item.replace('# ', '')}</h1>`)
-      } else if (item.startsWith('## ')) { // 2 级标题（h2）
-        resultTextArr.push(`<h2>${item.replace('## ', '')}</h2>`)
-      } else if (item.startsWith('### ')) { // 3 级标题（h3）
-        resultTextArr.push(`<h3>${item.replace('### ', '')}</h3>`)
-      } else if (item.indexOf('---') == 0) {
-        resultTextArr.push(item.replace('---', '<hr>'))
-      } else { // 普通的段落
-        resultTextArr.push(`${item}`)
-      }
-    })
-    return resultTextArr.join('<br>')
   }
 
   static async AutoDownload(appNewUrl: string, html_url: string, file_name: string, hot: boolean, msgKey: string): Promise<boolean> {

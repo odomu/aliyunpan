@@ -568,8 +568,8 @@ body[arco-theme='dark'] .toppanarea {
   line-height: 48px;
 }
 .vermodal {
-  height: 200px;
-  width: 400px;
+  height: 50vh;
+  width: 520px;
   flex-direction: column;
   justify-content: center;
   align-items: center;
