@@ -1,6 +1,5 @@
-<script lang='ts'>
-import { computed, defineComponent, h, PropType, ref } from 'vue'
-import dayjs from 'dayjs'
+<script setup lang='ts'>
+import { computed, h, PropType, ref } from 'vue'
 import message from '../../utils/message'
 import { IAliShareAnonymous } from '../../aliapi/alimodels'
 import AliShare from '../../aliapi/share'
@@ -34,237 +33,237 @@ export interface CheckNode {
   children: CheckNode[]
 }
 
+const props = defineProps({
+  visible: {
+    type: Boolean,
+    required: true
+  },
+  withsave: {
+    type: Boolean,
+    required: true
+  },
+  share_id: {
+    type: String,
+    required: true
+  },
+  share_pwd: {
+    type: String,
+    required: true
+  },
+  share_token: {
+    type: String,
+    required: true
+  },
+  file_id_list: {
+    type: Array as PropType<string[]>,
+    required: true
+  }
+})
+
 const iconfolder = h('i', { class: 'iconfont iconfile-folder' })
 const foldericonfn = () => iconfolder
 const fileiconfn = (icon: string) => h('i', { class: 'iconfont ' + icon })
+const winStore = useWinStore()
+const treeHeight = computed(() => (winStore.height * 8) / 10 - 126)
+const okLoading = ref(false)
+const share = ref<IAliShareAnonymous | undefined>(undefined)
+const expiration = computed(() => (share.value ? humanExpiration(share.value.shareinfo.expiration) : ''))
+const share_token = ref('')
+const fileList = new Set<string>()
+const dirList = new Set<string>()
+const isAlbum = ref(false)
+const filterKeyword = ref('')
 
-export default defineComponent({
-  components: {
-    AntdTree
-  },
-  props: {
-    visible: {
-      type: Boolean,
-      required: true
-    },
-    withsave: {
-      type: Boolean,
-      required: true
-    },
-    share_id: {
-      type: String,
-      required: true
-    },
-    share_pwd: {
-      type: String,
-      required: true
-    },
-    share_token: {
-      type: String,
-      required: true
-    },
-    file_id_list: {
-      type: Array as PropType<string[]>,
-      required: true
-    }
-  },
+const handleOpen = () => {
+  fileList.clear()
+  dirList.clear()
+  props.file_id_list.map((t) => fileList.add(t))
 
-  setup(props) {
-    const winStore = useWinStore()
-    const treeHeight = computed(() => (winStore.height * 8) / 10 - 126)
-    const okLoading = ref(false)
-    const share = ref<IAliShareAnonymous | undefined>(undefined)
-    const expiration = computed(() => (share.value ? humanExpiration(share.value.shareinfo.expiration) : ''))
-    const share_token = ref('')
-    const fileList = new Set<string>()
-    const dirList = new Set<string>()
-    const isAlbum = ref(false)
-
-    const handleOpen = () => {
-      fileList.clear()
-      dirList.clear()
-      props.file_id_list.map((t) => fileList.add(t))
-
-      AliShare.ApiGetShareAnonymous(props.share_id).then((info) => {
-        share.value = info
-        isAlbum.value = info.shareinfo.is_photo_collection
-        if (props.withsave) ShareDAL.SaveOtherShare(props.share_pwd, info, true)
-      })
-      treeExpandedKeys.value = []
-      treeSelectedKeys.value = []
-      if (props.share_token) {
-        share_token.value = props.share_token
+  AliShare.ApiGetShareAnonymous(props.share_id).then((info) => {
+    share.value = info
+    isAlbum.value = info.shareinfo.is_photo_collection
+    if (props.withsave) ShareDAL.SaveOtherShare(props.share_pwd, info, true)
+  })
+  treeExpandedKeys.value = []
+  treeSelectedKeys.value = []
+  if (props.share_token) {
+    share_token.value = props.share_token
+    apiLoad('root').then((addList: TreeNodeData[]) => {
+      treeData.value = addList
+    })
+  } else {
+    AliShare.ApiGetShareToken(props.share_id, props.share_pwd).then((token) => {
+      if (token.startsWith('，')) message.error('加载分享链接失败' + token)
+      else {
+        share_token.value = token
         apiLoad('root').then((addList: TreeNodeData[]) => {
           treeData.value = addList
         })
-      } else {
-        AliShare.ApiGetShareToken(props.share_id, props.share_pwd).then((token) => {
-          if (token.startsWith('，')) message.error('加载分享链接失败' + token)
-          else {
-            share_token.value = token
-            apiLoad('root').then((addList: TreeNodeData[]) => {
-              treeData.value = addList
-            })
-          }
-        })
       }
+    })
+  }
+}
+
+const handleClose = () => {
+
+  if (okLoading.value) okLoading.value = false
+  share.value = undefined
+  share_token.value = ''
+  fileList.clear()
+  dirList.clear()
+  treeData.value = []
+  treeExpandedKeys.value = []
+  treeSelectedKeys.value = []
+  treeCheckedKeys.value = []
+}
+
+const treeref = ref()
+const treeData = ref<TreeNodeData[]>([])
+const treeExpandedKeys = ref<string[]>([])
+const treeSelectedKeys = ref<string[]>([])
+const treeCheckedKeys = ref<string[]>([])
+
+const onLoadData = (treeNode: EventDataNode) => {
+  return new Promise<void>((resolve) => {
+    if (share_token.value == '' || !treeNode.dataRef || treeNode.dataRef?.children?.length) {
+      resolve()
+      return
     }
+    apiLoad(treeNode.dataRef.key).then((addList: TreeNodeData[]) => {
+      treeNode.dataRef!.children = addList
+      if (treeData.value) treeData.value = treeData.value.concat()
+      resolve()
+    })
+  })
+}
 
-    const handleClose = () => {
-
-      if (okLoading.value) okLoading.value = false
-      share.value = undefined
-      share_token.value = ''
-      fileList.clear()
-      dirList.clear()
-      treeData.value = []
-      treeExpandedKeys.value = []
-      treeSelectedKeys.value = []
-      treeCheckedKeys.value = []
-    }
-
-    const treeref = ref()
-    const treeData = ref<TreeNodeData[]>([])
-    const treeExpandedKeys = ref<string[]>([])
-    const treeSelectedKeys = ref<string[]>([])
-    const treeCheckedKeys = ref<string[]>([])
-
-    const onLoadData = (treeNode: EventDataNode) => {
-      return new Promise<void>((resolve) => {
-        if (share_token.value == '' || !treeNode.dataRef || treeNode.dataRef?.children?.length) {
-          resolve()
-          return
+const autoExpand = (list: TreeNodeData[]) => {
+  if (list.length < 4) {
+    setTimeout(() => {
+      for (let i = 0, maxi = list.length; i < maxi; i++) {
+        const item = list[i]
+        if (!item.isLeaf) {
+          apiLoad(item.key).then((addList: TreeNodeData[]) => {
+            item.children = addList
+            if (treeData.value) treeData.value = treeData.value.concat()
+            if (treeExpandedKeys.value) treeExpandedKeys.value.push(item.key)
+          })
         }
-        apiLoad(treeNode.dataRef.key).then((addList: TreeNodeData[]) => {
-          treeNode.dataRef!.children = addList
-          if (treeData.value) treeData.value = treeData.value.concat()
-          resolve()
-        })
-      })
-    }
-
-    const autoExpand = (list: TreeNodeData[]) => {
-      if (list.length < 4) {
-        setTimeout(() => {
-          for (let i = 0, maxi = list.length; i < maxi; i++) {
-            const item = list[i]
-            if (!item.isLeaf) {
-              apiLoad(item.key).then((addList: TreeNodeData[]) => {
-                item.children = addList
-                if (treeData.value) treeData.value = treeData.value.concat()
-                if (treeExpandedKeys.value) treeExpandedKeys.value.push(item.key)
-              })
-            }
-          }
-        }, 200)
       }
-    }
+    }, 200)
+  }
+}
 
-    const apiLoad = (key: any) => {
-      return AliShare.ApiShareFileList(props.share_id, share_token.value, key as string)
-        .then((resp) => {
-          const addList: TreeNodeData[] = []
-          if (resp.next_marker == '') {
-            for (let i = 0, maxi = resp.items.length; i < maxi; i++) {
-              const item = resp.items[i]
-              if (item.isDir) dirList.add(item.file_id)
-              addList.push({
-                key: item.file_id,
-                title: item.name,
-                sizeStr: item.sizeStr,
-                children: [],
-                isDir: item.isDir,
-                isLeaf: !item.isDir,
-                icon: item.isDir ? foldericonfn : () => fileiconfn(item.icon)
-              } as TreeNodeData)
-            }
-            autoExpand(addList)
-          } else {
-            message.error('列出分享文件失败：' + resp.next_marker)
-          }
-          return addList
-        })
-        .catch(() => {
-          return [] as TreeNodeData[]
-        })
-    }
-
-    return {
-      okLoading,
-      handleOpen,
-      handleClose,
-      treeHeight,
-      treeref,
-      treeSelectToExpand,
-      share,
-      isAlbum,
-      shareToken: share_token,
-      expiration,
-      dayjs,
-      treeData,
-      treeExpandedKeys,
-      treeSelectedKeys,
-      treeCheckedKeys,
-      onLoadData,
-      fileList: fileList
-    }
-  },
-  methods: {
-    handleHide() {
-      modalCloseAll()
-    },
-
-    handleOK(saveType: string) {
-      const checkedKeys = this.treeref.checkedKeys
-      const checkedMap = new Map<string, boolean>()
-      for (let i = 0, maxi = checkedKeys.length; i < maxi; i++) {
-        checkedMap.set(checkedKeys[i].toString(), true)
-      }
-      const halfCheckedKeys = this.treeref.halfCheckedKeys
-      const halfCheckedMap = new Map<string, boolean>()
-      for (let i = 0, maxi = halfCheckedKeys.length; i < maxi; i++) {
-        halfCheckedMap.set(halfCheckedKeys[i].toString(), true)
-      }
-
-      const treeData = this.treeData
-      let selectNodes: CheckNode[] = []
-
-      if (saveType == 'all') {
-        for (let i = 0, maxi = treeData.length; i < maxi; i++) {
-          const item = treeData[i]
-          selectNodes.push({
-            file_id: item.key.toString(),
-            name: item.title!.toString(),
+const apiLoad = (key: any) => {
+  return AliShare.ApiShareFileList(props.share_id, share_token.value, key as string)
+    .then((resp) => {
+      const addList: TreeNodeData[] = []
+      if (resp.next_marker == '') {
+        for (let i = 0, maxi = resp.items.length; i < maxi; i++) {
+          const item = resp.items[i]
+          if (item.isDir) dirList.add(item.file_id)
+          addList.push({
+            key: item.file_id,
+            title: item.name,
+            sizeStr: item.sizeStr,
+            children: [],
             isDir: item.isDir,
-            halfChecked: false,
-            children: []
-          } as CheckNode)
+            isLeaf: !item.isDir,
+            icon: item.isDir ? foldericonfn : () => fileiconfn(item.icon)
+          } as TreeNodeData)
         }
-      } else if (saveType == 'file') {
-        selectNodes = getCheckNodeOnlyFile(treeData, checkedMap, halfCheckedMap)
-      } else if (saveType == 'folder') {
-        selectNodes = getCheckNode(treeData, checkedMap, halfCheckedMap)
-      } else if (saveType == 'fileAndFolder') {
-        selectNodes = getCheckNodeFileAndFolder(treeData, checkedMap, halfCheckedMap)
+        autoExpand(addList)
+      } else {
+        message.error('列出分享文件失败：' + resp.next_marker)
       }
+      return addList
+    })
+    .catch(() => {
+      return [] as TreeNodeData[]
+    })
+}
 
-      console.log('selectNodes', selectNodes)
-      const share_id = this.share_id
-      const share_token = this.shareToken
-      modalSelectPanDir('share', '', async function(user_id: string, drive_id: string, to_drive_id: string, dirID: string) {
-        if (!drive_id || !to_drive_id || !dirID) return
-        const result = await SaveLink(saveType, share_id, share_token, user_id, to_drive_id, dirID, selectNodes)
-        if (result) message.error('保存文件出错,' + result)
-        else message.success('保存文件成功,请稍后手动刷新保存到的文件夹')
-        PanDAL.aReLoadOneDirToRefreshTree(user_id, to_drive_id, dirID)
-      })
-    },
+const handleHide = () => {
+  modalCloseAll()
+}
 
-    handleOKAlbum(saveType: string) {
-      message.error('暂不支持导入从相册分享的链接')
-    }
+const filteredTreeData = computed(() => {
+  const keyword = filterKeyword.value.trim().toLowerCase()
+  if (!keyword) {
+    // 如果关键词为空，则返回原始的文件树数据
+    return treeData.value
+  } else {
+    const matchedNodes: TreeNodeData[] = []
+    filterTreeNodes(treeData.value, keyword, matchedNodes)
+    return matchedNodes
   }
 })
+
+//@ts-ignore
+const filterTreeNodes = (nodes, keyword, matchedNodes) => {
+  for (const node of nodes) {
+    if (node.isDir && node.children.length > 0) {
+      for (const cnode of node.children) {
+        if (cnode.title.toLowerCase().includes(keyword)) {
+          matchedNodes.push(cnode)
+        }
+      }
+    } else if (node.isLeaf && node.title.toLowerCase().includes(keyword)) {
+      matchedNodes.push(node)
+    }
+  }
+}
+
+const handleFilterChange = (val: any) => {
+  filterKeyword.value = val
+}
+
+const handleOK = (saveType: string) => {
+  const checkedKeys = treeref.value.checkedKeys
+  const checkedMap = new Map<string, boolean>()
+  for (let i = 0, maxi = checkedKeys.length; i < maxi; i++) {
+    checkedMap.set(checkedKeys[i].toString(), true)
+  }
+  const halfCheckedKeys = treeref.value.halfCheckedKeys
+  const halfCheckedMap = new Map<string, boolean>()
+  for (let i = 0, maxi = halfCheckedKeys.length; i < maxi; i++) {
+    halfCheckedMap.set(halfCheckedKeys[i].toString(), true)
+  }
+
+  let selectNodes: CheckNode[] = []
+  let treeData = filteredTreeData.value
+  if (saveType == 'all') {
+    for (let i = 0, maxi = treeData.length; i < maxi; i++) {
+      const item = treeData[i]
+      selectNodes.push({
+        file_id: item.key.toString(),
+        name: item.title!.toString(),
+        isDir: item.isDir,
+        halfChecked: false,
+        children: []
+      } as CheckNode)
+    }
+  } else if (saveType == 'file') {
+    selectNodes = getCheckNodeOnlyFile(treeData, checkedMap, halfCheckedMap)
+  } else if (saveType == 'folder') {
+    selectNodes = getCheckNode(treeData, checkedMap, halfCheckedMap)
+  } else if (saveType == 'fileAndFolder') {
+    selectNodes = getCheckNodeFileAndFolder(treeData, checkedMap, halfCheckedMap)
+  }
+
+  console.log('selectNodes', selectNodes)
+  modalSelectPanDir('share', '', async function(user_id: string, drive_id: string, to_drive_id: string, dirID: string) {
+    if (!drive_id || !to_drive_id || !dirID) return
+    const result = await SaveLink(saveType, props.share_id, share_token.value, user_id, to_drive_id, dirID, selectNodes)
+    if (result) message.error('保存文件出错,' + result)
+    else message.success('保存文件成功,请稍后手动刷新保存到的文件夹')
+    PanDAL.aReLoadOneDirToRefreshTree(user_id, to_drive_id, dirID)
+  })
+}
+
+const handleOKAlbum = (saveType: string) => {
+  message.error('暂不支持导入从相册分享的链接')
+}
 
 
 function getCheckNode(list: TreeNodeData[], checkedMap: Map<string, boolean>, halfCheckedMap: Map<string, boolean>) {
@@ -415,8 +414,21 @@ async function getNodeAllFiles(share_id: string, share_token: string, file_id: s
            @close='handleClose'>
     <template #title>
       <div class='modaltitle'>
-        <span class='sharetime'>[{{ expiration }}]</span> <span class='sharetitle'>{{ share?.shareinfo.share_name
-        }}</span>
+        <span class='sharetime'>[{{ expiration }}]</span>
+        <span class='sharetitle'>{{ share?.shareinfo.share_name }}</span>
+        <div class='toppanbtn' style='margin-right: 35px'>
+          <a-input-search
+            ref='inputsearch'
+            :model-value='filterKeyword'
+            :input-attrs="{ tabindex: '-1' }"
+            size='small'
+            title='Ctrl+F / F3 / Space'
+            placeholder='快速筛选'
+            draggable='false'
+            @dragenter.stop='() => false'
+            @input='(val:any)=>handleFilterChange(val as string)'
+            @keydown.esc=';($event.target as any).blur()' />
+        </div>
       </div>
     </template>
     <div class='modalbody' style='width: 80vw; max-width: 860px; height: calc(80vh - 100px); padding-bottom: 16px'>
@@ -425,7 +437,7 @@ async function getNodeAllFiles(share_id: string, share_token: string, file_id: s
         v-model:expanded-keys='treeExpandedKeys'
         v-model:selected-keys='treeSelectedKeys'
         v-model:checked-keys='treeCheckedKeys'
-        :tree-data='treeData'
+        :tree-data='filteredTreeData'
         :load-data='onLoadData'
         :tabindex='-1'
         :focusable='false'
