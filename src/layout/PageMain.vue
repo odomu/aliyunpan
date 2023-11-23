@@ -180,7 +180,7 @@ const handleCheckVer = () => {
                 @update:selected-keys='appStore.toggleTab($event[0])'>
           <a-menu-item key='pan' title='Alt+1'>网盘</a-menu-item>
           <a-menu-item key='down' title='Alt+2'>传输</a-menu-item>
-          <a-menu-item key='share' title='Alt+3'>分享</a-menu-item>
+          <a-menu-item key='share' title='Alt+3'>资源</a-menu-item>
           <a-menu-item key='rss' title='Alt+4'>插件</a-menu-item>
         </a-menu>
 

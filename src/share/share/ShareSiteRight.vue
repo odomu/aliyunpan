@@ -70,6 +70,8 @@ const handleClose = () => {
     content.value.removeChild(webview.value)
     webview.value = {}
   }
+  hideLeft.value = false
+  emits('hideLeft', false)
 }
 const handleRefreshSiteList = () => {
   ServerHttp.CheckConfigUpgrade().catch((err: any) => {
@@ -131,7 +133,7 @@ const handleForward = () => {
   </div>
   <div class='top-btn' style='height: 32px' v-show='siteUrl'>
     <div class='toppanbtn'>
-      <a-button type='text' size='small' tabindex='-1' @click='openExternal(siteUrl)'>
+      <a-button type='text' size='small' tabindex='-1' @click='openExternal(webview.src || siteUrl)'>
         <i class='iconfont icondebug' />浏览器打开
       </a-button>
     </div>
