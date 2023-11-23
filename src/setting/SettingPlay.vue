@@ -31,6 +31,32 @@ function handleSelectPlayer() {
 
 <template>
   <div class='settingcard'>
+    <div class='settinghead'>:视频元信息</div>
+    <div class='settingrow'>
+      <MySwitch :value='settingStore.uiVideoMetaData' @update:value='cb({ uiVideoMetaData: $event })'>
+        开启视频元信息查看
+      </MySwitch>
+    </div>
+    <div class='settingspace'></div>
+    <a-row class='grid-demo'>
+      <a-col flex='252px'>
+        <div class='settinghead'>:TMDB API Key</div>
+        <div class='settingrow'>
+          <a-input v-model.trim='settingStore.uiVideoMetaDataApiKey'
+                   :style="{ width: '180px' }"
+                   placeholder='TMDB API Key'
+                   @update:model-value='cb({ uiVideoMetaDataApiKey: $event })' />
+        </div>
+      </a-col>
+      <a-col flex='180px'>
+        <div class='settinghead'>:TMDB API Proxy</div>
+        <a-input v-model.trim='settingStore.uiVideoMetaDataProxyUrl'
+                 :style="{ width: '180px' }"
+                 placeholder='TMDB API Proxy'
+                 @update:model-value='cb({ uiVideoMetaDataProxyUrl: $event })' />
+      </a-col>
+    </a-row>
+    <div class='settingspace'></div>
     <div class='settinghead'>:播放视频清晰度</div>
     <div class='settingrow'>
       <a-radio-group type='button' tabindex='-1' :model-value='settingStore.uiVideoMode'

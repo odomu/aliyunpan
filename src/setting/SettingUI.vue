@@ -65,35 +65,24 @@ const handleUpdateLog = () => {
       </a-radio-group>
     </div>
     <div class='settingspace'></div>
-    <div class='settinghead'>:启动时检查更新</div>
-    <div class='settingrow'>
-      <MySwitch :value='settingStore.uiLaunchAutoCheckUpdate' @update:value='cb({ uiLaunchAutoCheckUpdate: $event })'>
-        自动检查更新
-      </MySwitch>
-    </div>
-    <div class='settingspace'></div>
-    <div class='settinghead'>:启动时自动签到</div>
-    <div class='settingrow'>
-      <MySwitch :value='settingStore.uiLaunchAutoSign' @update:value='cb({ uiLaunchAutoSign: $event })'>自动签到
-      </MySwitch>
-    </div>
-    <div class='settingspace'></div>
-    <div class='settinghead'>:关闭时彻底退出</div>
-    <div class='settingrow'>
-      <MySwitch :value='settingStore.uiExitOnClose' @update:value='cb({ uiExitOnClose: $event })'>
-        关闭窗口时彻底退出小白羊
-      </MySwitch>
-      <a-popover position='right'>
-        <i class='iconfont iconbulb' />
-        <template #content>
-          <div>
-            默认：<span class='opred'>关闭</span>
-            <hr />
-            默认是点击窗口上的关闭按钮时<br />最小化到托盘，继续上传/下载<br /><br />开启此设置后直接彻底退出小白羊程序
-          </div>
-        </template>
-      </a-popover>
-    </div>
+    <a-row class='grid-demo'>
+      <a-col flex='252px'>
+        <div class='settinghead'>:启动时检查更新</div>
+        <div class='settingrow'>
+          <MySwitch :value='settingStore.uiLaunchAutoCheckUpdate'
+                    @update:value='cb({ uiLaunchAutoCheckUpdate: $event })'>
+            自动检查更新
+          </MySwitch>
+        </div>
+      </a-col>
+      <a-col flex='180px'>
+        <div class='settinghead'>:启动时自动签到</div>
+        <div class='settingrow'>
+          <MySwitch :value='settingStore.uiLaunchAutoSign' @update:value='cb({ uiLaunchAutoSign: $event })'>自动签到
+          </MySwitch>
+        </div>
+      </a-col>
+    </a-row>
     <template v-if="['win32', 'darwin'].includes(os.platform())">
       <div class='settingspace'></div>
       <div class='settinghead'>:开机自启</div>
@@ -111,6 +100,31 @@ const handleUpdateLog = () => {
         </a-row>
       </div>
     </template>
+    <div class='settingspace'></div>
+    <div class='settinghead'>:关闭时彻底退出</div>
+    <div class='settingrow'>
+      <MySwitch :value='settingStore.uiExitOnClose' @update:value='cb({ uiExitOnClose: $event })'>
+        关闭窗口时彻底退出小白羊
+      </MySwitch>
+      <a-popover position='right'>
+        <i class='iconfont iconbulb' />
+        <template #content>
+          <div>
+            默认：<span class='opred'>关闭</span>
+            <hr />
+            默认是点击窗口上的关闭按钮时<br />最小化到托盘，继续上传/下载<br /><br />开启此设置后直接彻底退出小白羊程序
+          </div>
+        </template>
+      </a-popover>
+    </div>
+    <div class='settingspace'></div>
+    <div class='settinghead'>:软件更新代理</div>
+    <div class='settingrow'>
+      <a-input v-model.trim='settingStore.uiUpdateProxyUrl'
+               :style="{ width: '280px' }"
+               placeholder='软件更新代理'
+               @update:model-value='cb({ uiUpdateProxyUrl: $event })' />
+    </div>
   </div>
 </template>
 

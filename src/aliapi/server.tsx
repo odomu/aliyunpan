@@ -2,7 +2,7 @@ import { b64decode } from '../utils/format'
 import { getPkgVersion } from '../utils/utils'
 import axios, { AxiosResponse } from 'axios'
 import message from '../utils/message'
-import { IShareSiteGroupModel, IShareSiteModel, useServerStore } from '../store'
+import { IShareSiteGroupModel, IShareSiteModel, useServerStore, useSettingStore } from '../store'
 import { Button, Modal, Space } from '@arco-design/web-vue'
 import { h } from 'vue'
 import { getAppNewPath, getResourcesPath, getUserDataPath, openExternal } from '../utils/electronhelper'
@@ -183,6 +183,9 @@ export default class ServerHttp {
           const remoteVer = tagName.replaceAll('v', '').trim()
           const verInfo = this.dealText(response.data.body as string)
           let verUrl = updateData.url
+          if (useSettingStore().uiUpdateProxyUrl) {
+            verUrl = useSettingStore().uiUpdateProxyUrl + '/' + verUrl
+          }
           if (remoteVer > configVer) {
             Modal.confirm({
               mask: true,

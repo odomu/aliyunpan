@@ -16,6 +16,9 @@ export interface SettingState {
 
   uiImageMode: string
 
+  uiVideoMetaData: boolean
+  uiVideoMetaDataApiKey: string
+  uiVideoMetaDataProxyUrl: string
   uiVideoMode: string
   uiVideoPlayer: string
   uiVideoPlayerExit: boolean
@@ -39,6 +42,8 @@ export interface SettingState {
   uiLaunchStart: boolean
 
   uiLaunchStartShow: boolean
+
+  uiUpdateProxyUrl: string
 
   uiEnableOpenApi: boolean
 
@@ -175,6 +180,9 @@ const setting: SettingState = {
 
   uiTheme: 'system',
   uiImageMode: 'fill',
+  uiVideoMetaData: false,
+  uiVideoMetaDataApiKey: '',
+  uiVideoMetaDataProxyUrl: '',
   uiVideoMode: 'web',
   uiVideoPlayer: 'web',
   uiVideoPlayerExit: false,
@@ -187,6 +195,7 @@ const setting: SettingState = {
   uiShowPanMedia: false,
   uiExitOnClose: false,
   uiLaunchAutoCheckUpdate: false,
+  uiUpdateProxyUrl: 'https://mirror.ghproxy.com',
   uiLaunchAutoSign: false,
   uiLaunchStart: false,
   uiLaunchStartShow: false,
@@ -275,7 +284,9 @@ function _loadSetting(val: any) {
   setting.uiTheme = defaultValue(val.uiTheme, ['system', 'light', 'dark'])
   console.log('_loadSetting', val)
   setting.uiImageMode = defaultValue(val.uiImageMode, ['fill', 'width', 'web'])
-  setting.uiVideoMode = defaultValue(val.uiVideoMode, ['web', 'online'])
+  setting.uiVideoMetaData = defaultBool(val.uiVideoMetaData, false)
+  setting.uiVideoMetaDataApiKey = defaultString(val.uiVideoMetaDataApiKey, '')
+  setting.uiVideoMetaDataProxyUrl = defaultString(val.uiVideoMetaDataProxyUrl, '')
   setting.uiVideoPlayer = defaultValue(val.uiVideoPlayer, ['web', 'other'])
   setting.uiVideoPlayerExit = defaultBool(val.uiVideoPlayerExit, false)
   setting.uiVideoPlayerHistory = defaultBool(val.uiVideoPlayerHistory, false)
@@ -287,6 +298,7 @@ function _loadSetting(val: any) {
   setting.uiShowPanMedia = defaultBool(val.uiShowPanMedia, false)
   setting.uiExitOnClose = defaultBool(val.uiExitOnClose, false)
   setting.uiLaunchAutoCheckUpdate = defaultBool(val.uiLaunchAutoCheckUpdate, false)
+  setting.uiUpdateProxyUrl = defaultString(val.uiUpdateProxyUrl, 'https://mirror.ghproxy.com')
   setting.uiLaunchAutoSign = defaultBool(val.uiLaunchAutoSign, false)
   setting.uiLaunchStart = defaultBool(val.uiLaunchStart, false)
   setting.uiLaunchStartShow = defaultBool(val.uiLaunchStartShow, false)
