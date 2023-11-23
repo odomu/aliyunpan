@@ -171,11 +171,11 @@ const initEvent = (art: Artplayer) => {
       art.playbackRate = playbackRate
     }
     // 视频播放完毕
-    art.on('video:ended', async () => {
+    art.on('video:ended', async (index: any) => {
       if (playList.length > 1) {
         autoPlayNumber = playList.findIndex(list => list.file_id == pageVideo.file_id)
         if (art.storage.get('autoPlayNext')) {
-          const item = playList[++autoPlayNumber]
+          const item = typeof index === 'number' ? playList[index] : playList[++autoPlayNumber]
           if (!item) {
             art.notice.show = '视频播放完毕'
             return
@@ -335,6 +335,40 @@ const defaultSettings = async (art: Artplayer) => {
 }
 
 const defaultControls = async (art: Artplayer) => {
+  if (playList.length > 1) {
+    art.controls.update({
+      index: 1,
+      position: 'left',
+      html: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-skip-back"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" x2="5" y1="19" y2="5"></line></svg>',
+      tooltip: '上一集',
+      click: async () => {
+        autoPlayNumber = playList.findIndex(list => list.file_id == pageVideo.file_id)
+        if (autoPlayNumber - 1 < 0) {
+          // 提示
+          art.notice.show = '已经是第一集了'
+          return
+        }
+        await updateVideoTime()
+        await art.emit('video:ended', --autoPlayNumber)
+      }
+    })
+    art.controls.update({
+      index: 20,
+      position: 'left',
+      html: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-skip-forward"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" x2="19" y1="5" y2="19"></line></svg>',
+      tooltip: '下一集',
+      click: async () => {
+        autoPlayNumber = playList.findIndex(list => list.file_id == pageVideo.file_id)
+        if (autoPlayNumber + 1 >= playList.length) {
+          // 提示
+          art.notice.show = '已经是第一集了'
+          return
+        }
+        await updateVideoTime()
+        await art.emit('video:ended', ++autoPlayNumber)
+      }
+    })
+  }
   art.controls.update({
     name: 'skipBegin',
     index: 40,
