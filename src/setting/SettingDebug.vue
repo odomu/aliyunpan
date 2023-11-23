@@ -3,6 +3,7 @@ import useSettingStore from './settingstore'
 import AppCache from '../utils/appcache'
 import MySwitch from '../layout/MySwitch.vue'
 import { getUserData } from '../utils/electronhelper'
+
 const settingStore = useSettingStore()
 const cb = (val: any) => {
   settingStore.updateStore(val)
@@ -76,7 +77,7 @@ const userData = getUserData()
     </div>
   </div>
 
-  <div class="settingcard" v-if='false'>
+  <div class='settingcard'>
     <a-alert banner type="warning">默认 不会产生任何 上传到服务器的数据</a-alert>
     <div class="settingspace"></div>
     <div class="settinghead">:自动填写 分享链接提取码</div>
@@ -122,7 +123,8 @@ const userData = getUserData()
       <span class="opblue" style="margin-left: 12px; padding: 0 12px">( {{ settingStore.debugCacheSize }} )</span>
     </div>
     <div class="settingrow">
-      <a-input tabindex="-1" :model-value="userData" placeholder="C:\Users\用户名\AppData\Roaming\alixby" :readonly="true" />
+      <a-input tabindex='-1' :model-value='userData' placeholder='C:\Users\用户名\AppData\Roaming\aliyunxby'
+               :readonly='true' />
     </div>
     <div class="settingspace"></div>
     <div class="settingrow">

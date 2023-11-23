@@ -76,7 +76,7 @@ export default class launch extends EventEmitter {
     app.commandLine.appendSwitch('proxy-bypass-list', '<local>')
     app.commandLine.appendSwitch('wm-window-animations-disabled')
 
-    app.name = 'alixby3'
+    app.name = 'aliyunxby'
     if (is.windows()) {
       app.setAppUserModelId('com.github.odomu')
     }
