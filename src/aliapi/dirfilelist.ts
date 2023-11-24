@@ -611,12 +611,15 @@ export default class AliDirFileList {
               if (!item.compilation_id && (!item.drive_id || !item.file_id)) continue
               if (!item.compilation_id) {
                 item.type = 'file'
+                item.category = 'video'
                 item.compilation_id = item.drive_id + '_' + item.file_id
               }
               if (item.video_type == 'COMPILATION') {
                 item.type = 'folder'
                 item.drive_id = item.compilation_id.split('_')[0]
                 item.file_id = item.compilation_id.split('_')[1]
+              } else {
+                item.category = 'video'
               }
             }
             if (isPic) {
