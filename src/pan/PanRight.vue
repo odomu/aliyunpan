@@ -242,7 +242,7 @@ const handleOpenFile = (event: Event, file: IAliGetFileModel | undefined) => {
   if (!file) return
 
   if (file.isDir) {
-    PanDAL.aReLoadOneDirToShow('', file.file_id, true, file.album_id)
+    PanDAL.aReLoadOneDirToShow(file.drive_id, file.file_id, true, file.album_id)
     return
   }
 

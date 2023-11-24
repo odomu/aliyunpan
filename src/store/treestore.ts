@@ -370,16 +370,25 @@ export default class TreeStore {
       time: 0,
       description: ''
     }
-    if (file_id.startsWith('video')) return {
-      __v_skip: true,
-      drive_id,
-      file_id: file_id,
-      parent_file_id: '',
-      name: '放映室 · ' + file_id.substring('video'.length),
-      namesearch: '',
-      size: 0,
-      time: 0,
-      description: ''
+    if (file_id.startsWith('video')) {
+      let videoType = file_id.substring('video'.length)
+      console.log('videoType', videoType)
+      if (videoType == '.compilation') {
+        videoType = '全部专辑'
+      } else if (videoType == '.recentplay') {
+        videoType = '正在观看'
+      }
+      return {
+        __v_skip: true,
+        drive_id,
+        file_id: file_id,
+        parent_file_id: '',
+        name: '放映室 · ' + videoType,
+        namesearch: '',
+        size: 0,
+        time: 0,
+        description: ''
+      }
     }
 
     const driverData = DriverData.get(drive_id)
@@ -532,7 +541,13 @@ export default class TreeStore {
       time: 0,
       description: ''
     }]
-    if (file_id.startsWith('video'))
+    if (file_id.startsWith('video')) {
+      let videoType = file_id.substring('video'.length)
+      if (videoType == '.compilation') {
+        videoType = '全部专辑'
+      } else if (videoType == '.recentplay') {
+        videoType = '正在观看'
+      }
       return [
         {
           __v_skip: true,
@@ -550,13 +565,14 @@ export default class TreeStore {
           drive_id,
           file_id: file_id,
           parent_file_id: '',
-          name: '放映室 · ' + file_id.substring('video'.length),
+          name: '放映室 · ' + videoType,
           namesearch: '',
           size: 0,
           time: 0,
           description: ''
         }
       ]
+    }
 
     const driverData = DriverData.get(drive_id)
     if (!driverData) return dirPath
