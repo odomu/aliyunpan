@@ -1,7 +1,7 @@
 {
   "name": "alixby",
   "description": "阿里云盘小白羊",
-  "version": "3.23.112410",
+  "version": "3.23.112415",
   "main": "dist/electron/main/index.js",
   "author": {
     "name": "Odomu",
@@ -56,6 +56,7 @@
     "less": "^4.2.0",
     "lodash": "^4.17.21",
     "markdown-it": "^13.0.2",
+    "moviedb-promise": "^4.0.3",
     "pinia": "^2.1.7",
     "secp256k1": "^5.0.0",
     "socks-proxy-agent": "^8.0.2",

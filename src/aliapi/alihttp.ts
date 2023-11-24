@@ -184,10 +184,10 @@ export default class AliHttp {
     }
   }
 
-  static async Get(url: string, user_id: string): Promise<IUrlRespData> {
+  static async Get(url: string, user_id: string, params?: any): Promise<IUrlRespData> {
     if (!url.startsWith('http') && !url.startsWith('https')) url = AliHttp.baseApi + url
     for (let i = 0; i <= 5; i++) {
-      const resp = await AliHttp._Get(url, user_id)
+      const resp = await AliHttp._Get(url, user_id, params)
       if (AliHttp.HttpCodeBreak(resp.code)) return resp
       else if (i == 5) return resp
       else await Sleep(2000)
@@ -195,7 +195,7 @@ export default class AliHttp {
     return { code: 607, header: '', body: 'NetError GetLost' }
   }
 
-  static _Get(url: string, user_id: string): Promise<IUrlRespData> {
+  static _Get(url: string, user_id: string, params?: any): Promise<IUrlRespData> {
     return UserDAL.GetUserTokenFromDB(user_id).then((token) => {
       const headers: any = {}
       if (token) {
@@ -206,6 +206,7 @@ export default class AliHttp {
       }
       return axios
         .get(url, {
+          params: params,
           withCredentials: false,
           responseType: 'json',
           timeout: 30000,

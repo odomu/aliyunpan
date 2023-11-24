@@ -44,6 +44,9 @@ export default defineComponent({
       if (text && text.indexOf('aliyundrive.com/s/') >= 0) {
         linkTxt = 'aliyundrive.com/s/' + text.substr(text.indexOf('aliyundrive.com/s/') + 'aliyundrive.com/s/'.length, 11)
       }
+      if (text && text.indexOf('alipan.com/s/') >= 0) {
+        linkTxt = 'alipan.com/s/' + text.substr(text.indexOf('alipan.com/s/') + 'alipan.com/s/'.length, 11)
+      }
 
       if (!linkTxt && !enmpty) linkTxt = text
       return { linkTxt, linkPwd }
@@ -85,14 +88,14 @@ export default defineComponent({
     handleOK() {
       this.formRef.validate((data: any) => {
         if (data) return
-
-        if (this.form.sharelink.indexOf('aliyundrive.com/s/') < 0) {
-          message.error('解析链接出错，必须为 aliyundrive.com/s/xxxxxxxxxxx 格式的链接')
+        let sharelink = this.form.sharelink
+        if (sharelink.indexOf('aliyundrive.com/s/') < 0 && sharelink.indexOf('alipan.com/s/') < 0) {
+          message.error('解析链接出错，必须为 aliyundrive.com/s/xxxxxxxxxxx 或 alipan.com/s/xxxxxxxxxxx 格式的链接')
           return
         }
 
         this.okLoading = true
-        const share_id = this.form.sharelink.split(/\.com\/s\/([\w]+)/)[1]
+        const share_id = sharelink.split(/\.com\/s\/([\w]+)/)[1]
         AliShare.ApiGetShareToken(share_id, this.form.password)
           .then((share_token) => {
             this.okLoading = false
@@ -128,10 +131,9 @@ export default defineComponent({
           label='分享链接：'
           :rules="[
             { required: true, message: '分享链接必填' },
-            { minLength: 29, message: '分享链接太短' },
             { maxLength: 300, message: '分享链接太长(300)' },
-            { match: /aliyundrive.com\/s\//, message: '必须是阿里云盘(aliyundrive.com/s/...)' },
-            { match: /aliyundrive.com\/s\/[0-9a-zA-Z_]{11,}/, message: '格式错误：aliyundrive.com/s/umaDDMR7w4F' }
+            { match: /(aliyundrive|alipan).com\/s\//, message: '必须是阿里云盘(aliyundrive.com/s/...或alipan.com/s/...)' },
+            { match: /(aliyundrive|alipan).com\/s\/[0-9a-zA-Z_]{11,}/, message: '格式错误：xxxxx.com/s/umaDDMR7w4F' }
           ]">
           <a-input v-model.trim='form.sharelink' placeholder='例如：aliyundrive.com/s/umaDDMR7w4F' allow-clear
                    :input-attrs="{ id: 'DaoRuShareInput', autofocus: 'autofocus' }" @paste.stop.prevent='onPaste' />

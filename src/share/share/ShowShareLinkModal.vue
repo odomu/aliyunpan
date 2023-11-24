@@ -431,7 +431,7 @@ async function getNodeAllFiles(share_id: string, share_token: string, file_id: s
         </div>
       </div>
     </template>
-    <div class='modalbody' style='width: 80vw; max-width: 860px; height: calc(80vh - 100px); padding-bottom: 16px'>
+    <div class='sharemodalbody'>
       <AntdTree
         ref='treeref'
         v-model:expanded-keys='treeExpandedKeys'
@@ -524,6 +524,13 @@ async function getNodeAllFiles(share_id: string, share_token: string, file_id: s
   overflow: hidden;
   text-overflow: ellipsis;
   padding-right: 32px;
+}
+
+.sharemodalbody {
+  width: 80vw;
+  max-width: 860px;
+  height: calc(80vh - 100px);
+  padding-bottom: 16px
 }
 
 .sharetree {

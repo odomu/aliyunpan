@@ -3,7 +3,7 @@ import AliShare from '../../aliapi/share'
 import { getFromClipboard } from '../../utils/electronhelper'
 import message from '../../utils/message'
 import { modalCloseAll, modalDaoRuShareLinkMulti } from '../../utils/modal'
-import { defineComponent, ref, reactive } from 'vue'
+import { defineComponent, reactive, ref } from 'vue'
 
 export default defineComponent({
   props: {
@@ -36,6 +36,9 @@ export default defineComponent({
 
       if (text && text.indexOf('aliyundrive.com/s/') >= 0) {
         linkTxt = 'aliyundrive.com/s/' + text.substr(text.indexOf('aliyundrive.com/s/') + 'aliyundrive.com/s/'.length, 11)
+      }
+      if (text && text.indexOf('alipan.com/s/') >= 0) {
+        linkTxt = 'alipan.com/s/' + text.substr(text.indexOf('alipan.com/s/') + 'alipan.com/s/'.length, 11)
       }
 
       if (!linkTxt && enmpty == false) linkTxt = text
@@ -75,15 +78,15 @@ export default defineComponent({
     },
     handleOK() {
       this.formRef.validate((data: any) => {
-        if (data) return 
-
-        if (this.form.sharelink.indexOf('aliyundrive.com/s/') < 0) {
-          message.error('解析链接出错，必须为 aliyundrive.com/s/xxxxxxxxxxx 格式的链接')
+        if (data) return
+        let sharelink = this.form.sharelink
+        if (sharelink.indexOf('aliyundrive.com/s/') < 0 && sharelink.indexOf('alipan.com/s/') < 0) {
+          message.error('解析链接出错，必须为 aliyundrive.com/s/xxxxxxxxxxx 或 alipan.com/s/xxxxxxxxxxx 格式的链接')
           return
         }
 
         this.okLoading = true
-        const sid = this.form.sharelink.split(/\.com\/s\/([\w]+)/)[1]
+        const sid = sharelink.split(/\.com\/s\/([\w]+)/)[1]
         AliShare.ApiGetShareToken(sid, this.form.password)
           .then((share_token) => {
             this.okLoading = false

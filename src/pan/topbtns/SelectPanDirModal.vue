@@ -374,17 +374,22 @@ export default defineComponent({
 </script>
 
 <template>
-  <a-modal :visible='visible' modal-class='modalclass showsharemodal' :footer='false' :unmount-on-close='true'
-           :mask-closable='false' @cancel='handleHide' @before-open='handleOpen' @close='handleClose'>
+  <a-modal :visible='visible' modal-class='modalclass showpandirmodal'
+           :footer='false'
+           :unmount-on-close='true'
+           :mask-closable='false'
+           @cancel='handleHide'
+           @before-open='handleOpen'
+           @close='handleClose'>
     <template #title>
       <span class='modaltitle'>{{ title }}选择一个位置</span>
     </template>
-    <div class='modalbody' style='width: 80vw; max-width: 860px; height: calc(80vh - 100px); padding-bottom: 16px'>
+    <div class='pandirmodalbody'>
       <AntdTree
         ref='treeref'
         :tabindex='-1'
         :focusable='false'
-        class='sharetree'
+        class='pandirtree'
         block-node
         selectable
         :auto-expand-parent='false'
@@ -459,7 +464,73 @@ export default defineComponent({
   width: 80vw;
 }
 
-.sharetree {
-  width: calc(100%);
+.showpandirmodal .arco-modal-header {
+  border-bottom: none;
+}
+
+.showpandirmodal .arco-modal-body {
+  width: 80vw;
+  max-width: 860px;
+  margin-left: 16px;
+  overflow: hidden;
+  padding: 0 16px 16px 16px !important;
+}
+
+.pandirmodalbody {
+  padding-bottom: 16px
+}
+
+.showpandirmodal .modaltitle {
+  width: 80vw;
+  max-width: 860px;
+  flex-wrap: nowrap;
+  display: flex;
+  justify-content: center;
+}
+
+.pandirtree {
+  border: 1px solid var(--color-neutral-3);
+  padding: 4px;
+}
+
+.pandirtree .ant-tree-icon__customize .iconfont {
+  font-size: 18px;
+  margin-right: 2px;
+}
+
+.pandirtree .ant-tree-node-content-wrapper {
+  flex: auto;
+  display: flex !important;
+  flex-direction: row;
+}
+
+.pandirtree .ant-tree-title {
+  flex: auto;
+  display: flex !important;
+  flex-direction: row;
+}
+
+.pandirtree .sharetitleleft {
+  flex-shrink: 1;
+  flex-grow: 1;
+  display: -webkit-box;
+  max-height: 48px;
+  word-break: break-all;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+}
+
+.pandirtree .sharetitleleft.new {
+  color: rgb(var(--primary-6));
+}
+
+.pandirtree .sharetitleright {
+  padding-left: 12px;
+  padding-right: 12px;
+  font-size: 12px;
+  color: var(--color-text-3);
+  flex-shrink: 0;
+  flex-grow: 0;
 }
 </style>
