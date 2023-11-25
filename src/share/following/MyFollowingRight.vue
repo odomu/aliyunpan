@@ -1,9 +1,22 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useAppStore, useMyFollowingStore, useKeyboardStore, KeyboardState, useUserStore, useWinStore } from '../../store'
+import {
+  KeyboardState,
+  useAppStore,
+  useKeyboardStore,
+  useMyFollowingStore,
+  useUserStore,
+  useWinStore
+} from '../../store'
 import FollowingDAL from './FollowingDAL'
 import { copyToClipboard, getFromClipboard, openExternal } from '../../utils/electronhelper'
-import { TestCtrl, TestKey, TestKeyboardSelect, TestKeyboardScroll, onHideRightMenuScroll } from '../../utils/keyboardhelper'
+import {
+  onHideRightMenuScroll,
+  TestCtrl,
+  TestKey,
+  TestKeyboardScroll,
+  TestKeyboardSelect
+} from '../../utils/keyboardhelper'
 import message from '../../utils/message'
 import { ArrayKeyList } from '../../utils/utils'
 import AliFollowing from '../../aliapi/following'
@@ -176,12 +189,18 @@ const handleSearchEnter = (event: any) => {
       <template #item="{ item }">
         <div :key="item.user_id" class="listitemdiv">
           <div :class="'following' + (myfollowingStore.ListSelected.has(item.user_id) ? ' selected' : '') + (myfollowingStore.ListFocusKey == item.user_id ? ' focus' : '')" @click="handleSelect(item.user_id, $event)">
-            <a-avatar :size="80" shape="square">
-              <img alt="avatar" :src="item.avatar" />
-            </a-avatar>
+            <a-avatar :size='30' :image-url='item.avatar' />
             <div class="followingmessages">
               <div class="followingname" @click="handleOpenLink(item.user_id)">{{ item.nick_name }} <a-badge v-if="item.has_unread_message" status="processing"></a-badge></div>
-              <div v-for="msg in item.latest_messages" :key="msg.sequence_id" class="followingmessage" @click="handleOpenShare(msg.content.share.share_id, msg.content.share.share_pwd, msg.content.file_id_list)">{{ msg.createdstr }} : {{ msg.display_action }}</div>
+              <div v-for='msg in item.latest_messages'
+                   :key='msg.sequence_id'
+                   class='followingmessage'
+                   @click='handleOpenShare(msg.content.share.share_id, msg.content.share.share_pwd, msg.content.file_id_list)'>
+                {{ msg.createdstr }} : {{ msg.display_action }}
+                <div v-for='(file, index) in msg.content.file_list' :key='index'>
+                  <span style='padding: 10px;margin-bottom: 10px;position: relative;'>{{ file.name }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -212,7 +231,7 @@ const handleSearchEnter = (event: any) => {
   flex-grow: 0;
   flex-shrink: 0;
   height: 106px;
-  padding: 12px 12px;
+  padding: 5px 5px;
   border-radius: 10px;
   border: transparent solid 1px;
   margin-right: 2px;
@@ -237,7 +256,7 @@ const handleSearchEnter = (event: any) => {
   flex-grow: 1;
   flex-shrink: 1;
   margin-left: 12px;
-  height: 80px;
+  height: 120px;
   overflow: hidden;
 }
 
