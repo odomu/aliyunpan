@@ -312,5 +312,6 @@ const handleCloseAlbum = () => {
 
 .active {
   background: rgba(99, 125, 255, 0.12);
+  box-shadow: 0 3px 10px rgba(225, 225, 239, 0.5);
 }
 </style>

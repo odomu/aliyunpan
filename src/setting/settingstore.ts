@@ -16,9 +16,6 @@ export interface SettingState {
 
   uiImageMode: string
 
-  uiVideoMetaData: boolean
-  uiVideoMetaDataApiKey: string
-  uiVideoMetaDataProxyUrl: string
   uiVideoMode: string
   uiVideoPlayer: string
   uiVideoPlayerExit: boolean
@@ -137,15 +134,6 @@ export interface SettingState {
 
   downAutoStart: boolean
 
-  webDavEnable: boolean
-  webDavMountLocal: boolean
-  webDavHost: string
-  webDavPort: number
-  webDavPath: string
-  webDavRights: string
-  webDavUsername: string
-  webDavPassword: string
-
   debugCacheSize: string
 
   debugFileListMax: number
@@ -180,9 +168,6 @@ const setting: SettingState = {
 
   uiTheme: 'system',
   uiImageMode: 'fill',
-  uiVideoMetaData: false,
-  uiVideoMetaDataApiKey: '',
-  uiVideoMetaDataProxyUrl: '',
   uiVideoMode: 'web',
   uiVideoPlayer: 'web',
   uiVideoPlayerExit: false,
@@ -253,15 +238,6 @@ const setting: SettingState = {
   downFinishAudio: true,
   downAutoStart: true,
 
-  webDavEnable: false,
-  webDavMountLocal: false,
-  webDavHost: '127.0.0.1',
-  webDavPort: 2000,
-  webDavPath: '',
-  webDavRights: '',
-  webDavUsername: '',
-  webDavPassword: '',
-
   debugCacheSize: '',
   debugFileListMax: 3000,
   debugFavorListMax: 1000,
@@ -284,9 +260,6 @@ function _loadSetting(val: any) {
   setting.uiTheme = defaultValue(val.uiTheme, ['system', 'light', 'dark'])
   console.log('_loadSetting', val)
   setting.uiImageMode = defaultValue(val.uiImageMode, ['fill', 'width', 'web'])
-  setting.uiVideoMetaData = defaultBool(val.uiVideoMetaData, false)
-  setting.uiVideoMetaDataApiKey = defaultString(val.uiVideoMetaDataApiKey, '')
-  setting.uiVideoMetaDataProxyUrl = defaultString(val.uiVideoMetaDataProxyUrl, '')
   setting.uiVideoPlayer = defaultValue(val.uiVideoPlayer, ['web', 'other'])
   setting.uiVideoPlayerExit = defaultBool(val.uiVideoPlayerExit, false)
   setting.uiVideoPlayerHistory = defaultBool(val.uiVideoPlayerHistory, false)
@@ -354,15 +327,6 @@ function _loadSetting(val: any) {
   setting.ariaLoading = false
   setting.downFinishAudio = defaultBool(val.downFinishAudio, true)
   setting.downAutoStart = defaultBool(val.downAutoStart, true)
-
-  setting.webDavEnable = defaultBool(val.webDavEnable, false)
-  setting.webDavMountLocal = defaultBool(val.webDavMountLocal, false)
-  setting.webDavHost = defaultString(val.webDavHost, '127.0.0.1')
-  setting.webDavPort = defaultNumber(val.webDavPort, 2000)
-  setting.webDavPath = defaultString(val.webDavPath, '')
-  setting.webDavRights = defaultString(val.webDavRights, '')
-  setting.webDavUsername = defaultString(val.webDavUsername, '')
-  setting.webDavPassword = defaultString(val.webDavPassword, '')
 
   setting.debugCacheSize = defaultString(val.debugCacheSize, '')
   setting.debugFileListMax = defaultNumberSub(val.debugFileListMax, 3000, 3000, 10000)
