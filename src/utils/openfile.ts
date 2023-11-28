@@ -221,14 +221,14 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
       const data = await AliFile.ApiVideoPreviewUrl(token.user_id, drive_id, file_id)
       if (data && data.url != '') {
         url = data.url
-        mode = '转码视频模式'
+        mode = '【转码】'
       }
     }
     if (!url && !weifa) {
       const data = await AliFile.ApiFileDownloadUrl(token.user_id, drive_id, file_id, 14400)
       if (typeof data !== 'string' && data.url && data.url != '') {
         url = data.url
-        mode = '原始文件模式'
+        mode = '【原画】'
       }
     }
     return { url, mode }
@@ -249,7 +249,7 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
     }
   }
   // 构造播放参数
-  let title = mode + '_' + name
+  let title = mode + name
   let titleStr = CleanStringForCmd(title)
   let referer = token.open_api_enable ? 'https://openapi.aliyundrive.com/' : 'https://www.aliyundrive.com/'
   let playCursor = humanTime(play_cursor)

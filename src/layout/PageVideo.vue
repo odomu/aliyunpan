@@ -337,22 +337,6 @@ const defaultSettings = async (art: Artplayer) => {
 const defaultControls = async (art: Artplayer) => {
   if (playList.length > 1) {
     art.controls.update({
-      index: 1,
-      position: 'left',
-      html: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-skip-back"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" x2="5" y1="19" y2="5"></line></svg>',
-      tooltip: '上一集',
-      click: async () => {
-        autoPlayNumber = playList.findIndex(list => list.file_id == pageVideo.file_id)
-        if (autoPlayNumber - 1 < 0) {
-          // 提示
-          art.notice.show = '已经是第一集了'
-          return
-        }
-        await updateVideoTime()
-        await art.emit('video:ended', --autoPlayNumber)
-      }
-    })
-    art.controls.update({
       index: 20,
       position: 'left',
       html: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-skip-forward"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" x2="19" y1="5" y2="19"></line></svg>',
@@ -361,7 +345,7 @@ const defaultControls = async (art: Artplayer) => {
         autoPlayNumber = playList.findIndex(list => list.file_id == pageVideo.file_id)
         if (autoPlayNumber + 1 >= playList.length) {
           // 提示
-          art.notice.show = '已经是第一集了'
+          art.notice.show = '已经是最后一集了'
           return
         }
         await updateVideoTime()
@@ -378,8 +362,13 @@ const defaultControls = async (art: Artplayer) => {
     tooltip: '点击设置片头',
     click: async (component, event) => {
       let currentTime = art.currentTime
-      art.storage.set('autoSkipBegin', currentTime)
-      art.notice.show = `设置片头：${currentTime}s`
+      if (art.storage.get('autoSkipBegin') > 0) {
+        art.storage.set('autoSkipBegin', 0)
+        art.notice.show = `取消设置片头`
+      } else {
+        art.storage.set('autoSkipBegin', currentTime)
+        art.notice.show = `设置片头：${currentTime}s`
+      }
     }
   })
   art.controls.update({
@@ -390,8 +379,13 @@ const defaultControls = async (art: Artplayer) => {
     tooltip: '点击设置片尾',
     click: async (component, event) => {
       let currentTime = art.currentTime
-      art.storage.set('autoSkipEnd', currentTime)
-      art.notice.show = `设置片尾：${currentTime}s`
+      if (art.storage.get('autoSkipEnd') > 0) {
+        art.storage.set('autoSkipEnd', 0)
+        art.notice.show = `取消设置片尾`
+      } else {
+        art.storage.set('autoSkipEnd', currentTime)
+        art.notice.show = `设置片尾：${currentTime}s`
+      }
     }
   })
 }
@@ -419,7 +413,7 @@ const getVideoInfo = async (art: Artplayer) => {
       html: qualityDefault ? qualityDefault.html : '',
       selector: qualitySelector,
       onSelect: async (item: selectorItem) => {
-        if (!item.url) {
+        if (item.html === '原画') {
           let data = await AliFile.ApiFileDownloadUrl(pageVideo.user_id, pageVideo.drive_id, pageVideo.file_id, 14400)
           if (typeof data == 'string' || !data.url) {
             art.notice.show = '获取原画链接失败，请切换到其他画质'
@@ -507,7 +501,7 @@ const getPlayList = async (art: Artplayer, file_id?: string) => {
 }
 
 const handlerPlayTitle = (html: string) => {
-  return (html.length > 20 ? html.substring(0, 30) + '...' : html)
+  return (html.length > 20 ? html.substring(0, 25) + '...' : html)
 }
 
 const getVideoCursor = async (art: Artplayer, play_cursor?: number) => {

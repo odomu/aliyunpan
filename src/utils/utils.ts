@@ -105,6 +105,16 @@ export function HanToPin(input: string): string {
   return strarr.join('')
 }
 
+export function GetExpiresTime(downUrl: string) {
+  if (!downUrl || !downUrl.includes('x-oss-expires=')) return 0
+  try {
+    let expires = downUrl.substring(downUrl.indexOf('x-oss-expires=') + 'x-oss-expires='.length)
+    expires = expires.substring(0, expires.indexOf('&'))
+    return parseInt(expires)
+  } catch {
+    return 0
+  }
+}
 
 export function GetOssExpires(downUrl: string) {
   if (!downUrl || !downUrl.includes('x-oss-expires=')) return 0
