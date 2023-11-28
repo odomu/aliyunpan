@@ -369,7 +369,7 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
   let playIndex = 0
   let port = 0
   let tmpServer: any
-  if (isMpv || isPotplayer) {
+  if ((isMpv || isPotplayer) && settingStore.uiVideoEnablePlayerList) {
     port = await portIsOccupied(12000)
     tmpServer = await createTmpServer(port)
     fileList = compilation_id ? await getDirFile() : usePanFileStore().ListDataRaw
@@ -382,15 +382,15 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
     args.unshift(tmpFile)
   }
   window.WebSpawnSync({ command, args, options }, async (res: any) => {
-    if ((isMpv || isPotplayer) && res.isRunning) {
-      if (isMpv) {
-        await Sleep(3000)
-        let currentTime = 0
-        let currentFileId = file_id
-        let lastEndTime = 0
-        let mpv: mpvAPI = new mpvAPI({ debug: false, verbose: false, socket: socketPath })
-        try {
-          await mpv.start().catch()
+    if (isMpv && res.isRunning) {
+      await Sleep(3000)
+      let currentTime = 0
+      let currentFileId = file_id
+      let lastEndTime = 0
+      let mpv: mpvAPI = new mpvAPI({ debug: false, verbose: false, socket: socketPath })
+      try {
+        await mpv.start().catch()
+        if (settingStore.uiVideoEnablePlayerList) {
           await mpv.loadPlaylist(tmpFile)
           await mpv.play()
           mpv.on('status', async (status: { property: string, value: any }) => {
@@ -429,31 +429,35 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
               })
             }
           })
-          mpv.on('seek', async (timePosition: any) => {
-            // console.log('seek', JSON.stringify(timePosition))
-            let { start, end } = timePosition
-            if (start > 0 && Math.round(start) != lastEndTime) {
-              await AliFile.ApiUpdateVideoTime(token.user_id, drive_id, currentFileId, end)
-            } else if (start == undefined) {
-              lastEndTime = end
-            }
-          })
-          mpv.on('timeposition', (timeposition: number) => {
-            // console.log('timeposition', currentTime)
-            currentTime = timeposition
-          })
-          mpv.on('crashed', async () => {
-            await AliFile.ApiUpdateVideoTime(token.user_id, drive_id, currentFileId, currentTime)
+        }
+        mpv.on('seek', async (timePosition: any) => {
+          // console.log('seek', JSON.stringify(timePosition))
+          let { start, end } = timePosition
+          if (start > 0 && Math.round(start) != lastEndTime) {
+            await AliFile.ApiUpdateVideoTime(token.user_id, drive_id, currentFileId, end)
+          } else if (start == undefined) {
+            lastEndTime = end
+          }
+        })
+        mpv.on('timeposition', (timeposition: number) => {
+          // console.log('timeposition', currentTime)
+          currentTime = timeposition
+        })
+        mpv.on('crashed', async () => {
+          await AliFile.ApiUpdateVideoTime(token.user_id, drive_id, currentFileId, currentTime)
+          if (settingStore.uiVideoEnablePlayerList) {
             delTmpFile(tmpFile)
             tmpServer.close()
-            await mpv.quit()
-          })
-        } catch (error) {
-          message.error('未知错误，请重新关闭播放器重新打开')
+          }
+          await mpv.quit()
+        })
+      } catch (error) {
+        message.error('未知错误，请重新关闭播放器重新打开')
+        if (settingStore.uiVideoEnablePlayerList) {
           delTmpFile(tmpFile)
           tmpServer.close()
-          await mpv.quit()
         }
+        await mpv.quit()
       }
     }
   })

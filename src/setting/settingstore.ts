@@ -18,6 +18,7 @@ export interface SettingState {
 
   uiVideoMode: string
   uiVideoPlayer: string
+  uiVideoEnablePlayerList: boolean
   uiVideoPlayerExit: boolean
   uiVideoPlayerHistory: boolean
   uiVideoSubtitleMode: string
@@ -170,6 +171,7 @@ const setting: SettingState = {
   uiImageMode: 'fill',
   uiVideoMode: 'web',
   uiVideoPlayer: 'web',
+  uiVideoEnablePlayerList: false,
   uiVideoPlayerExit: false,
   uiVideoPlayerHistory: false,
   uiVideoSubtitleMode: 'auto',
@@ -261,6 +263,7 @@ function _loadSetting(val: any) {
   console.log('_loadSetting', val)
   setting.uiImageMode = defaultValue(val.uiImageMode, ['fill', 'width', 'web'])
   setting.uiVideoPlayer = defaultValue(val.uiVideoPlayer, ['web', 'other'])
+  setting.uiVideoEnablePlayerList = defaultBool(val.uiVideoEnablePlayerList, false)
   setting.uiVideoPlayerExit = defaultBool(val.uiVideoPlayerExit, false)
   setting.uiVideoPlayerHistory = defaultBool(val.uiVideoPlayerHistory, false)
   setting.uiVideoSubtitleMode = defaultValue(val.uiVideoSubtitleMode, ['close', 'auto', 'select'])

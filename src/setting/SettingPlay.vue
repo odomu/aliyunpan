@@ -112,16 +112,30 @@ function handleSelectPlayer() {
                        @update:model-value='cb({ uiVideoSubtitleMode: $event })'>
           <a-radio tabindex='-1' value='close'>关闭字幕加载</a-radio>
           <a-radio tabindex='-1' value='auto'>自动加载同名字幕</a-radio>
-          <a-radio tabindex='-1' value='select'>手动选择字幕文件</a-radio>
+          <a-radio tabindex='-1' value='select' v-if='!settingStore.uiVideoEnablePlayerList'>手动选择字幕文件</a-radio>
         </a-radio-group>
       </div>
-      <div class='settingspace'></div>
-      <div class='settinghead'>:播放器退出设置</div>
-      <div class='settingrow'>
-        <MySwitch :value='settingStore.uiVideoPlayerExit' @update:value='cb({ uiVideoPlayerExit: $event })'>
-          跟随软件一同退出
-        </MySwitch>
-      </div>
+      <template v-if='settingStore.uiVideoPlayerPath.toLowerCase().includes("mpv")
+                      || settingStore.uiVideoPlayerPath.toLowerCase().includes("potplayer")'>
+        <div class='settingspace'></div>
+        <div class='settinghead'>:播放列表设置</div>
+        <div class='settingrow'>
+          <MySwitch :value='settingStore.uiVideoEnablePlayerList'
+                    @update:value='cb({ uiVideoEnablePlayerList: $event })'>
+            开启播放列表加载
+          </MySwitch>
+        </div>
+      </template>
+      <template v-if='settingStore.uiVideoEnablePlayerList
+              && !settingStore.uiVideoPlayerPath.toLowerCase().includes("mpv")'>
+        <div class='settingspace'></div>
+        <div class='settinghead'>:播放器退出设置</div>
+        <div class='settingrow'>
+          <MySwitch :value='settingStore.uiVideoPlayerExit' @update:value='cb({ uiVideoPlayerExit: $event })'>
+            跟随软件一同退出
+          </MySwitch>
+        </div>
+      </template>
       <div class='settingspace'></div>
       <div class='settinghead'>:网页播放历史</div>
       <div class='settingrow'>
