@@ -6,11 +6,11 @@ import { AriaGlobalSpeed } from '../utils/aria2c'
 const settingStore = useSettingStore()
 
 const cb = async (val: any) => {
+  await settingStore.updateStore(val)
   // 限速实时生效
-  if (Object.hasOwn(val, 'downGlobalSpeed')){
+  if (Object.hasOwn(val, 'downGlobalSpeed') || Object.hasOwn(val, 'downGlobalSpeedM')) {
     await AriaGlobalSpeed()
   }
-  await settingStore.updateStore(val)
 }
 
 const handleSelectDownSavePath = () => {
