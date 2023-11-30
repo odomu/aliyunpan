@@ -21,6 +21,7 @@ export interface SettingState {
   uiVideoEnablePlayerList: boolean
   uiVideoPlayerExit: boolean
   uiVideoPlayerHistory: boolean
+  uiVideoPlayerParams: string
   uiVideoSubtitleMode: string
   uiVideoPlayerPath: string
   uiAutoPlaycursorVideo: boolean
@@ -174,6 +175,7 @@ const setting: SettingState = {
   uiVideoEnablePlayerList: false,
   uiVideoPlayerExit: false,
   uiVideoPlayerHistory: false,
+  uiVideoPlayerParams: '',
   uiVideoSubtitleMode: 'auto',
   uiVideoPlayerPath: '',
   uiAutoPlaycursorVideo: true,
@@ -266,6 +268,7 @@ function _loadSetting(val: any) {
   setting.uiVideoEnablePlayerList = defaultBool(val.uiVideoEnablePlayerList, false)
   setting.uiVideoPlayerExit = defaultBool(val.uiVideoPlayerExit, false)
   setting.uiVideoPlayerHistory = defaultBool(val.uiVideoPlayerHistory, false)
+  setting.uiVideoPlayerParams = defaultString(val.uiVideoPlayerParams, '')
   setting.uiVideoSubtitleMode = defaultValue(val.uiVideoSubtitleMode, ['close', 'auto', 'select'])
   setting.uiVideoPlayerPath = defaultString(val.uiVideoPlayerPath, '')
   setting.uiAutoPlaycursorVideo = defaultBool(val.uiAutoPlaycursorVideo, true)

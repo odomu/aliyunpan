@@ -177,12 +177,10 @@ export function portIsOccupied(port: number) {
       resolve(port) // 返回可用端口
     })
     server.on('error', (err: any) => {
-      console.log('err', err)
       if (err.code === 'EADDRINUSE') {
         resolve(portIsOccupied(port + 1)) // 如传入端口号被占用则 +1
         console.log(`this port ${port} is occupied.try another.`)
       } else {
-        console.log(err)
         // reject(err)
         resolve(port)
       }

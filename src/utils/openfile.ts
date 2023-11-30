@@ -233,13 +233,6 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
     }
     return { url, mode }
   }
-  let res = await getVideoUrl(drive_id, file_id, weifa)
-  let url = res.url
-  let mode = res.mode
-  if (!url) {
-    message.error('视频地址解析失败，操作取消')
-    return
-  }
   // 加载网盘内字幕文件
   let subTitleUrl = ''
   if (subTitleFileId.length > 0) {
@@ -249,15 +242,12 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
     }
   }
   // 构造播放参数
-  let title = mode + name
-  let titleStr = CleanStringForCmd(title)
-  let referer = token.open_api_enable ? 'https://openapi.aliyundrive.com/' : 'https://www.aliyundrive.com/'
-  let playCursor = humanTime(play_cursor)
-  if (url.indexOf('x-oss-additional-headers=referer') > 0) {
-    message.error('用户token已过期，请点击头像里退出按钮后重新登录账号')
-    return
-  }
-  let command = settingStore.uiVideoPlayerPath
+  let url = ''
+  const title = name
+  const titleStr = CleanStringForCmd(title)
+  const referer = token.open_api_enable ? 'https://openapi.aliyundrive.com/' : 'https://www.aliyundrive.com/'
+  const playCursor = humanTime(play_cursor)
+  const command = settingStore.uiVideoPlayerPath
   const commandLowerCase = command.toLowerCase()
   const isWindows = window.platform === 'win32'
   const isMacOrLinux = ['darwin', 'linux'].includes(window.platform)
@@ -268,11 +258,20 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
     message.error('不支持的系统，操作取消')
     return
   }
-  let playerArgs: any = { url, otherArgs: [] }
-  let options: SpawnOptions = {
-    // 跟随软件退出
-    detached: !settingStore.uiVideoPlayerExit
+  if ((!isPotplayer && !isMpv) || ((isPotplayer || isMpv) && !settingStore.uiVideoEnablePlayerList)) {
+    const res = await getVideoUrl(drive_id, file_id, weifa)
+    if (!res.url) {
+      message.error('视频地址解析失败，操作取消')
+      return
+    }
+    if (res.url.indexOf('x-oss-additional-headers=referer') > 0) {
+      message.error('用户token已过期，请点击头像里退出按钮后重新登录账号')
+      return
+    }
+    url = res.url
   }
+  let playerArgs: any = { url, otherArgs: [] }
+  let options: SpawnOptions = { detached: !settingStore.uiVideoPlayerExit }
   let socketPath = isWindows ? '\\\\.\\pipe\\mpvserver' : '/tmp/mpvserver.sock'
   if (isPotplayer) {
     playerArgs = {
@@ -296,7 +295,6 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
       url: url,
       otherArgs: [
         '--idle',
-        '--msg-level=all=no,ipc=v',
         '--force-window=immediate',
         '--hwdec=auto',
         '--geometry=80%',
@@ -319,7 +317,10 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
       playerArgs.otherArgs.push(`--sub-file=${argsToStr(subTitleUrl)}`)
     }
   }
-  const args = [argsToStr(playerArgs.url), ...playerArgs.otherArgs]
+  if (settingStore.uiVideoPlayerParams.length > 0) {
+    playerArgs.otherArgs.push(...settingStore.uiVideoPlayerParams.replaceAll(/\s+/g, '').split(','))
+  }
+  const args = [argsToStr(playerArgs.url), ...Array.from(new Set(playerArgs.otherArgs))]
   const getDirFile = async () => {
     const dir = await AliDirFileList.ApiDirFileList(token.user_id, drive_id, parent_file_id, '', 'name asc', '')
     const curDirFileList = []
@@ -349,19 +350,30 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
     const http = require('http')
     const url = require('url')
     // 创建服务器
-    return http.createServer(async (req: IncomingMessage, res: ServerResponse) => {
-      // console.log(`HTTP request: ${req.method} ${req.url}`)
-      // 解析请求 URL
-      const { pathname, query } = url.parse(req.url, true)
-      if (pathname == '/play') {
-        // 获取真实播放地址
-        let videoInfo = await getVideoUrl(query.drive_id, query.file_id, false)
-        // 重定向
-        res.writeHead(301, { 'Location': videoInfo.url })
-        res.flushHeaders()
-        res.end('ok')
+    const server = http.createServer(async (req: IncomingMessage, res: ServerResponse) => {
+      try {
+        const { pathname, query } = url.parse(req.url, true)
+        if (pathname === '/play') {
+          // 获取真实播放地址
+          let videoInfo = await getVideoUrl(query.drive_id, query.file_id, false)
+          // 重定向
+          res.writeHead(301, {
+            'Location': videoInfo.url,
+            'Content-Type': 'text/plain'
+          })
+          res.flushHeaders()
+          res.end()
+        } else {
+          res.writeHead(404, { 'Content-Type': 'text/plain' })
+          res.end('Not Found')
+        }
+      } catch (error) {
+        res.writeHead(500, { 'Content-Type': 'text/plain' })
+        res.end('Internal Server Error')
       }
-    }).listen(port)
+    })
+    server.listen(port)
+    return server
   }
   let fileList: any
   let playList: any
@@ -378,27 +390,33 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
     // console.log('tmpFile', tmpFile)
     playIndex = playList.findIndex((v: any) => v.file_id == file_id)
     args.shift()
-    isMpv && args.push(`--playlist-start=${playIndex}`)
+    if (isMpv) {
+      args.push(`--playlist-start=${playIndex}`)
+    }
     args.unshift(tmpFile)
   }
   window.WebSpawnSync({ command, args, options }, async (res: any) => {
-    if (isMpv && res.isRunning) {
-      await Sleep(3000)
+    // 如果不开启播放列表和记录历史则不需要启动Server
+    if (!settingStore.uiVideoEnablePlayerList && !settingStore.uiVideoPlayerHistory) {
+      return
+    }
+    if (isMpv && !res.error) {
       let currentTime = 0
       let currentFileId = file_id
       let lastEndTime = 0
-      let mpv: mpvAPI = new mpvAPI({ debug: false, verbose: false, socket: socketPath })
+      let mpv: mpvAPI = new mpvAPI({ debug: true, verbose: false, socket: socketPath })
       try {
+        await Sleep(1000)
         await mpv.start().catch()
         if (settingStore.uiVideoEnablePlayerList) {
           await mpv.loadPlaylist(tmpFile)
           await mpv.play()
-          mpv.on('status', async (status: { property: string, value: any }) => {
+          mpv.on('status', (status: { property: string, value: any }) => {
             // console.log('status', status)
             if (status.property === 'playlist-pos' && status.value != -1) {
               // 保存历史
               const item = playList[status.value]
-              await AliFile.ApiUpdateVideoTime(token.user_id, drive_id, currentFileId, currentTime)
+              AliFile.ApiUpdateVideoTime(token.user_id, drive_id, currentFileId, currentTime)
               currentFileId = item && item.file_id
               if (currentFileId && settingStore.uiAutoColorVideo && !item.description) {
                 AliFileCmd.ApiFileColorBatch(token.user_id, drive_id, 'ce74c3c', [currentFileId])
@@ -407,13 +425,13 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
                   })
               }
               mpv.once('started', async () => {
-                if (currentFileId && useSettingStore().uiVideoPlayerHistory) {
+                if (currentFileId && settingStore.uiVideoPlayerHistory) {
                   let play_cursor = await getPlayCursor(currentFileId)
                   if (play_cursor > 0) {
                     await mpv.seek(play_cursor, 'absolute')
                   }
                 }
-                if (item && useSettingStore().uiVideoSubtitleMode === 'auto') {
+                if (item && settingStore.uiVideoSubtitleMode === 'auto') {
                   let filename = item.name
                   let subTitlesList = fileList.filter((file: any) => /srt|vtt|ass/.test(file.ext))
                   if (subTitlesList.length > 0) {
@@ -430,11 +448,11 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
             }
           })
         }
-        mpv.on('seek', async (timePosition: any) => {
+        mpv.on('seek', (timePosition: any) => {
           // console.log('seek', JSON.stringify(timePosition))
           let { start, end } = timePosition
           if (start > 0 && Math.round(start) != lastEndTime) {
-            await AliFile.ApiUpdateVideoTime(token.user_id, drive_id, currentFileId, end)
+            AliFile.ApiUpdateVideoTime(token.user_id, drive_id, currentFileId, end)
           } else if (start == undefined) {
             lastEndTime = end
           }

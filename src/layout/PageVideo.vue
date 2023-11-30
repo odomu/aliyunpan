@@ -542,13 +542,13 @@ const loadOnlineSub = async (art: Artplayer, item: any) => {
   if (data) {
     if (item.ext === 'ass') {
       art.subtitle.show = true
-      art.notice.show = `切换字幕：${item.name}`
       await renderAssSubtitle(art, data)
     } else {
       const blob = new Blob([data], { type: item.ext })
       onlineSubBlobUrl = URL.createObjectURL(blob)
       await art.subtitle.switch(onlineSubBlobUrl, { name: item.name, type: item.ext, escape: false })
     }
+    art.notice.show = `切换字幕：${item.name}`
     return item.html
   } else {
     art.notice.show = `加载${item.name}字幕失败`

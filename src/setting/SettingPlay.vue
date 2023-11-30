@@ -115,6 +115,28 @@ function handleSelectPlayer() {
           <a-radio tabindex='-1' value='select' v-if='!settingStore.uiVideoEnablePlayerList'>手动选择字幕文件</a-radio>
         </a-radio-group>
       </div>
+      <div class='settingspace'></div>
+      <div class='settinghead'>:播放器启动参数设置</div>
+      <a-popover position='bottom'>
+        <i class='iconfont iconbulb' />
+        <template #content>
+          <div style='min-width: 400px'>
+            <span class='opred'>自定义播放器参数, 使用,【逗号】分割</span> <br>
+            <hr />
+            <span class='opblue'>例如【MPV播放器HDR】：</span> --d3d11-output-csp=pq
+          </div>
+        </template>
+      </a-popover>
+      <div class='settingrow'>
+        <a-textarea
+          v-model.trim='settingStore.uiVideoPlayerParams'
+          :style="{ width: '320px' }"
+          :autoSize='{minRows: 1, maxRows: 2}'
+          allow-clear
+          @keydown='(e:any) => e.stopPropagation()'
+          placeholder='没有不填，用于自定义播放器启动参数'
+          @update:model-value='cb({ uiVideoPlayerParams: $event })' />
+      </div>
       <template v-if='settingStore.uiVideoPlayerPath.toLowerCase().includes("mpv")
                       || settingStore.uiVideoPlayerPath.toLowerCase().includes("potplayer")'>
         <div class='settingspace'></div>
@@ -137,10 +159,10 @@ function handleSelectPlayer() {
         </div>
       </template>
       <div class='settingspace'></div>
-      <div class='settinghead'>:网页播放历史</div>
+      <div class='settinghead'>:播放历史设置</div>
       <div class='settingrow'>
         <MySwitch :value='settingStore.uiVideoPlayerHistory' @update:value='cb({ uiVideoPlayerHistory: $event })'>
-          自动跳转到网页播放历史进度
+          跳转并记忆播放历史
         </MySwitch>
         <a-popover position='bottom'>
           <i class='iconfont iconbulb' />

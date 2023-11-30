@@ -1,20 +1,6 @@
 'use strict'
 
 const util = {
-
-  Sleep: function(msTime) {
-    return new Promise((resolve) =>
-      setTimeout(
-        () =>
-          resolve({
-            success: true,
-            time: msTime
-          }),
-        msTime
-      )
-    )
-  },
-
   // Merges the options input by the user with the default options, giving
   // the user input options priority
   //
@@ -136,8 +122,7 @@ const util = {
   getCaller: function() {
     // get the top most caller of the function stack for error message purposes
     const stackMatch = new Error().stack.match(/at\s\w*[^getCaller]\.\w*\s/g)
-    const caller = stackMatch[stackMatch.length - 1].split('.')[1].trim() + '()'
-    return caller
+    return stackMatch[stackMatch.length - 1].split('.')[1].trim() + '()'
   }
 }
 

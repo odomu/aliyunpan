@@ -171,11 +171,9 @@ export default class ipcEvent {
             command = `${argsToStr(data.command)}`
           }
           const subProcess = spawn(command, data.args, options)
-          const isRunning = process.kill(subProcess.pid, 0)
           subProcess.unref()
           event.returnValue = {
             pid: subProcess.pid,
-            isRunning: isRunning,
             execCmd: data,
             options: options,
             exitCode: subProcess.exitCode
