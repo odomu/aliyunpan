@@ -243,8 +243,7 @@ export function createElectronWindow(width: number, height: number, center: bool
   })
   win.removeMenu()
   if (DEBUGGING) {
-    const url = `http://localhost:${process.env.VITE_DEV_SERVER_PORT}`
-    win.loadURL(url, { userAgent: ua, httpReferrer: Referer })
+    win.loadURL(process.env.VITE_DEV_SERVER_URL, { userAgent: ua, httpReferrer: Referer })
   } else {
     win.loadURL('file://' + getAsarPath('dist/' + page + '.html'), {
       userAgent: ua,

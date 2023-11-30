@@ -2,66 +2,87 @@ import { rmSync } from 'fs'
 import path from 'path'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import electron, { onstart } from 'vite-plugin-electron'
+import electron from 'vite-plugin-electron/simple'
 import pkg from './package.json'
 
-rmSync('dist', { recursive: true, force: true })
-rmSync('release', { recursive: true, force: true })
-
 // https://vitejs.dev/config/
-export default defineConfig({
-  build: {
-    rollupOptions: {
-      output: {
-        chunkFileNames: '[name].js',
-        entryFileNames: '[name].js',
-        assetFileNames: '[name].[ext]'
-      }
-    }
-  },
-  plugins: [
-    vue({
-      template: {
-        compilerOptions: {
-          isCustomElement: (tag) => tag == 'Webview'
+export default defineConfig(({ command }) => {
+  rmSync('dist', { recursive: true, force: true })
+  rmSync('release', { recursive: true, force: true })
+
+  const isServe = command === 'serve'
+  const isBuild = command === 'build'
+  return {
+    build: {
+      rollupOptions: {
+        output: {
+          chunkFileNames: '[name].js',
+          entryFileNames: '[name].js',
+          assetFileNames: '[name].[ext]'
         }
       }
-    }),
-    electron({
-      main: {
-        entry: 'electron/main/index.ts',
-        vite: {
-          build: {
-            // For Debug
-            // sourcemap: true,
-            outDir: 'dist/electron/main'
-          },
-          // Will start Electron via VSCode Debug
-          plugins: [process.env.VSCODE_DEBUG ? onstart() : null]
-        }
-      },
-      preload: {
-        input: {
-          // You can configure multiple preload here
-          index: path.join(__dirname, 'electron/preload/index.ts')
-        },
-        vite: {
-          build: {
-            // For Debug
-            // sourcemap: 'inline',
-            outDir: 'dist/electron/preload'
+    },
+    plugins: [
+      vue({
+        template: {
+          compilerOptions: {
+            isCustomElement: (tag) => tag == 'Webview'
           }
         }
-      },
-      // Enables use of Node.js API in the Renderer-process
-      // https://github.com/electron-vite/vite-plugin-electron/tree/main/packages/electron-renderer#electron-renderervite-serve
-      renderer: {}
-    })
-  ],
-  server: process.env.VSCODE_DEBUG
-    ? {
-        host: pkg.debug.env.VITE_DEV_SERVER_HOSTNAME,
-        port: pkg.debug.env.VITE_DEV_SERVER_PORT
+      }),
+      electron({
+        main: {
+          // Shortcut of `build.lib.entry`
+          entry: 'electron/main/index.ts',
+          onstart(options) {
+            if (process.env.VSCODE_DEBUG) {
+              console.log(/* For `.vscode/.debug.script.mjs` */'[startup] Electron App')
+            } else {
+              options.startup()
+            }
+          },
+          vite: {
+            build: {
+              minify: isBuild,
+              outDir: 'dist/electron/main',
+              rollupOptions: {
+                external: Object.keys('dependencies' in pkg ? pkg.dependencies : {})
+              }
+            }
+          }
+        },
+        preload: {
+          // Shortcut of `build.rollupOptions.input`
+          input: path.join(__dirname, 'electron/preload/index.ts'),
+          onstart(options) {
+            // Notify the Renderer-Process to reload the page when the Preload-Scripts build is complete,
+            // instead of restarting the entire Electron App.
+            options.reload()
+          },
+          vite: {
+            build: {
+              minify: isBuild,
+              outDir: 'dist/electron/preload',
+              rollupOptions: {
+                external: Object.keys('dependencies' in pkg ? pkg.dependencies : {})
+              }
+            }
+          }
+        },
+        // Optional: Use Node.js API in the Renderer process
+        renderer: {
+          resolve: {
+            'webdav-server': { type: 'cjs' }
+          }
+        }
+      })
+    ],
+    server: process.env.VSCODE_DEBUG && (() => {
+      const url = new URL(pkg.debug.env.VITE_DEV_SERVER_URL)
+      return {
+        host: url.hostname,
+        port: +url.port
       }
-    : undefined
+    })()
+  }
 })

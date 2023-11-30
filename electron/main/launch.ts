@@ -8,6 +8,7 @@ import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { EventEmitter } from 'node:events'
 import exception from './core/exception'
 import ipcEvent from './core/ipcEvent'
+import path from 'path'
 
 type UserToken = {
   access_token: string;
@@ -65,6 +66,10 @@ export default class launch extends EventEmitter {
     }
     process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+    process.env.DIST = path.join(__dirname, '../dist')
+    process.env.VITE_PUBLIC = app.isPackaged
+      ? process.env.DIST
+      : path.join(process.env.DIST, '../public')
 
     app.commandLine.appendSwitch('no-sandbox')
     app.commandLine.appendSwitch('disable-web-security')
