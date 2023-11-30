@@ -404,7 +404,7 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
       let currentTime = 0
       let currentFileId = file_id
       let lastEndTime = 0
-      let mpv: mpvAPI = new mpvAPI({ debug: true, verbose: false, socket: socketPath })
+      let mpv: mpvAPI = new mpvAPI({ debug: false, verbose: false, socket: socketPath })
       try {
         await Sleep(1000)
         await mpv.start().catch()
@@ -448,15 +448,6 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
             }
           })
         }
-        mpv.on('seek', (timePosition: any) => {
-          // console.log('seek', JSON.stringify(timePosition))
-          let { start, end } = timePosition
-          if (start > 0 && Math.round(start) != lastEndTime) {
-            AliFile.ApiUpdateVideoTime(token.user_id, drive_id, currentFileId, end)
-          } else if (start == undefined) {
-            lastEndTime = end
-          }
-        })
         mpv.on('timeposition', (timeposition: number) => {
           // console.log('timeposition', currentTime)
           currentTime = timeposition
