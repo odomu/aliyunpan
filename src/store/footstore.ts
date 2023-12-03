@@ -5,6 +5,7 @@ import { humanTimeFM } from '../utils/format'
 import { defineStore } from 'pinia'
 import { ITokenInfo } from '../user/userstore'
 import useAppStore from './appstore'
+import message from '../utils/message'
 
 export interface AsyncModel {
   user_id: string
@@ -130,14 +131,15 @@ const useFootStore = defineStore('foot', {
             result = ApiGetAsyncTask(item.user_id, item.key)
           }
           result
-            .then((resp) => {
+            .then(async (resp) => {
               item.status = resp
               list[i].endtime = new Date().getTime()
               list[i].usetime = humanTimeFM((list[i].endtime - list[i].starttime) / 1000)
               if (item.status != 'running') {
 
                 if (item.type == '解压' || item.type == '复制' || item.type == '导入分享' || item.type == '回收站还原') {
-                  PanDAL.GetDirFileList(item.user_id, item.todrive_id, item.tofile_id, '')
+                  await PanDAL.aReLoadOneDirToShow(item.todrive_id, 'refresh', false)
+                  message.success(`${item.type}完成`)
                 }
               }
             })

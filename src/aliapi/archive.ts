@@ -139,6 +139,7 @@ export default class AliArchive {
   
   static async ApiArchiveUncompress(user_id: string, drive_id: string, file_id: string, domain_id: string, archive_type: string, target_drive_id: string, target_file_id: string, password: string, file_list: string[]): Promise<IArchiveData | undefined> {
     if (!user_id || !drive_id || !file_id || !target_drive_id || !target_file_id) return undefined
+    if (target_file_id.includes('root')) target_file_id = 'root'
     const url = 'v2/archive/uncompress'
     const postData: {
       drive_id: string

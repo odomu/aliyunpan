@@ -217,7 +217,7 @@ export default defineComponent({
         if (result) {
           if (result.state == 'Succeed') {
             message.success('在线解压成功')
-            PanDAL.GetDirFileList(user_id, to_drive_id, dirID, '')
+            await PanDAL.aReLoadOneDirToShow(to_drive_id, 'refresh', false)
           } else if (result.state == 'Running') {
             message.warning('在线解压异步执行中...')
             useFootStore().mAddTaskZip(user_id, result.task_id, '解压', this.file_name, to_drive_id, dirID, this.drive_id, this.file_id, domain_id)
