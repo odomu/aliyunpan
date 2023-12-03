@@ -22,6 +22,9 @@ export default defineConfig(({ command }) => {
         }
       }
     },
+    esbuild: {
+      drop: ['console', 'debugger']
+    },
     plugins: [
       vue({
         template: {
@@ -70,11 +73,7 @@ export default defineConfig(({ command }) => {
           }
         },
         // Optional: Use Node.js API in the Renderer process
-        renderer: {
-          resolve: {
-            'webdav-server': { type: 'cjs' }
-          }
-        }
+        renderer: {}
       })
     ],
     server: process.env.VSCODE_DEBUG && (() => {
