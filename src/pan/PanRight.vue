@@ -51,6 +51,7 @@ import { throttle } from '../utils/debounce'
 import { TestButton } from '../utils/mosehelper'
 import usePanTreeStore from './pantreestore'
 import { GetDriveID, GetDriveType } from '../aliapi/utils'
+import { xorWith } from 'lodash'
 
 const viewlist = ref()
 const inputsearch = ref()
@@ -330,6 +331,18 @@ const onSelectCancel = () => {
   panfileStore.ListFocusKey = ''
   panfileStore.mRefreshListDataShow(false)
 }
+const onSelectReverse = () => {
+  onHideRightMenuScroll()
+  const listData = panfileStore.ListDataShow
+  const listSelected = panfileStore.GetSelected()
+  const reverseSelect = xorWith(listData, listSelected, (a, b) => a.file_id === b.file_id)
+  panfileStore.ListSelected.clear()
+  panfileStore.ListFocusKey = ''
+  if (reverseSelect.length > 0) {
+    panfileStore.mRangSelect(reverseSelect[0].file_id, reverseSelect.map(r => r.file_id))
+  }
+  panfileStore.mRefreshListDataShow(false)
+}
 const onSelectRangStart = () => {
   onHideRightMenuScroll()
   rangIsSelecting.value = !rangIsSelecting.value
@@ -385,7 +398,9 @@ const onRowItemDragStart = (ev: any, file_id: string) => {
   onHideRightMenuScroll()
   dragingRowItem.value = true
 
-  if (!panfileStore.ListSelected.has(file_id)) panfileStore.mMouseSelect(file_id, false, false)
+  if (!panfileStore.ListSelected.has(file_id)) {
+    panfileStore.mMouseSelect(file_id, false, false)
+  }
   const files = panfileStore.GetSelected()
   if (files.length == 0) return
 
@@ -655,6 +670,14 @@ const onPanDragEnd = (ev: any) => {
           </div>
         </template>
       </AntdTooltip>
+      <a-button shape='square'
+                v-if='!rangIsSelecting && panfileStore.ListSelected.size > 0 && panfileStore.ListSelected.size < panfileStore.ListDataShow.length'
+                type='text'
+                tabindex='-1'
+                class='qujian'
+                status='normal' @click='onSelectReverse'>
+        反向选择
+      </a-button>
       <a-button shape='square' v-if='!rangIsSelecting && panfileStore.ListSelected.size > 0' type='text' tabindex='-1'
                 class='qujian'
                 status='normal' @click='onSelectCancel'>
