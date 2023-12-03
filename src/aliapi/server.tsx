@@ -12,6 +12,7 @@ import { existsSync, readFileSync, rmSync, writeFile } from 'fs'
 import { execFile, SpawnOptions } from 'child_process'
 import path from 'path'
 import MarkdownIt from 'markdown-it'
+import { modalShowPost } from '../utils/modal'
 
 const { shell } = require('electron')
 
@@ -105,16 +106,8 @@ export default class ServerHttp {
           for (let item of list) {
             GroupList.push({ group: item.group, title: item.title })
           }
-        } else {
-          GroupList = [
-            { group: 'search', title: '搜索' },
-            { group: 'doc', title: '文档' },
-            { group: 'video', title: '影视' },
-            { group: 'nav', title: '导航' },
-            { group: 'bbs', title: '论坛' }
-          ]
+          ShareDAL.SaveShareSiteGroup(GroupList)
         }
-        ShareDAL.SaveShareSiteGroup(GroupList)
         if (response.data.SSList && response.data.SSList.length > 0) {
           const list: IShareSiteModel[] = []
           const SSList = response.data.SSList
@@ -132,6 +125,12 @@ export default class ServerHttp {
         }
         if (response.data.HELP && response.data.HELP.length > 0) {
           useServerStore().mSaveHelpUrl(response.data.HELP)
+        }
+        if (response.data.POST && response.data.POST.length > 0) {
+          let postId = localStorage.getItem('postmodal')
+          if (!postId || postId != response.data.POST_ID) {
+            modalShowPost(response.data.POST, response.data.POST_ID)
+          }
         }
       })
   }

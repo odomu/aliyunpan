@@ -20,11 +20,11 @@ import M3U8DownloadModal from '../pan/topbtns/M3U8DownloadModal.vue'
 import CopyFileTreeModal from '../pan/topbtns/CopyFileTreeModal.vue'
 import ArchiveModal from '../pan/topbtns/ArchiveModal.vue'
 import ArchivePasswordModal from '../pan/topbtns/ArchivePasswordModal.vue'
-import AlphaModal from '../pan/topbtns/AlphaModal.vue'
 import UploadModal from '../pan/topbtns/UploadModal.vue'
 import DownloadModal from '../pan/topbtns/DownloadModal.vue'
 import MoveToAlbumModal from '../pan/topbtns/MoveToAlbumModal.vue'
 import ShowUpdateLog from '../pan/topbtns/ShowUpdateLog.vue'
+import PostModal from '../pan/topbtns/PostModal.vue'
 
 export default defineComponent({
   components: {
@@ -45,13 +45,13 @@ export default defineComponent({
     SearchPanModal,
     DLNAPlayerModal,
     M3U8DownloadModal,
-    AlphaModal,
     CopyFileTreeModal,
     ArchiveModal,
     ArchivePasswordModal,
     UploadModal,
     DownloadModal,
-    ShowUpdateLog
+    ShowUpdateLog,
+    PostModal
   },
   setup() {
     const modalStore = useModalStore()
@@ -61,8 +61,6 @@ export default defineComponent({
 </script>
 
 <template>
-  <!--  <AlphaModal />-->
-
   <UserSpaceModal :visible="modalStore.modalName == 'userspace'" />
   <CreatNewFileModal :visible="modalStore.modalName == 'creatfile'" />
   <CreatNewAlbumModal :visible="modalStore.modalName == 'creatalbum'" />
@@ -137,6 +135,11 @@ export default defineComponent({
                      :callback='modalStore.modalData.callback' />
 
   <ShowUpdateLog :visible="modalStore.modalName == 'showupdatelog'" />
+
+  <PostModal :visible="modalStore.modalName == 'showpostmodal'"
+             :msg='modalStore.modalData.msg || ""'
+             :msgid='modalStore.modalData.msgid || ""' />
+
 </template>
 <style>
 .modalclass .arco-modal-body {

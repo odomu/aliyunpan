@@ -119,16 +119,31 @@ const handleForward = () => {
           <i class='iconfont iconreload-1-icon' />刷新列表
         </a-button>
       </template>
-      <a-tab-pane v-for='(item, index) in serverStore.shareSiteGroupList' :key='index' :title='item.title'>
+      <template v-if='serverStore.shareSiteGroupList.length > 0'>
+        <a-tab-pane v-for='(item, index) in serverStore.shareSiteGroupList' :key='index' :title='item.title'>
+          <a-card :bordered='false' class='site-list'>
+            <template v-for='(siteItem, index) in serverStore.shareSiteList' :key='index'>
+              <a-card-grid v-if='siteItem.group === item.group' :hoverable='index % 2 === 0' class='site-list-item'>
+                <a :style='{ color: siteItem.color }'
+                   @click='handleSite(siteItem)'
+                   v-html='`${siteItem.title}<small>${siteItem.tip}</small>`' />
+              </a-card-grid>
+            </template>
+          </a-card>
+        </a-tab-pane>
+      </template>
+      <template v-else>
         <a-card :bordered='false' class='site-list'>
-          <template v-for='(siteItem, index) in serverStore.shareSiteList' :key='index'>
-            <a-card-grid v-if='siteItem.group === item.group' :hoverable='index % 2 === 0' class='site-list-item'>
-              <a :style='{ color: siteItem.color }' @click='handleSite(siteItem)'
-                 v-html='`${siteItem.title}<small>${siteItem.tip}</small>`'></a>
-            </a-card-grid>
-          </template>
+          <a-card-grid v-for='(siteItem, index) in serverStore.shareSiteList'
+                       :key='index'
+                       :hoverable='index % 2 === 0'
+                       class='sitelistitem'>
+            <a :style='{ color: siteItem.color }'
+               @click='handleSite(siteItem)'
+               v-html='`${siteItem.title}<small>${siteItem.tip}</small>`' />
+          </a-card-grid>
         </a-card>
-      </a-tab-pane>
+      </template>
     </a-tabs>
   </div>
   <div class='top-btn' style='height: 32px' v-show='siteUrl'>

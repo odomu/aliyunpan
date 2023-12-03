@@ -103,3 +103,7 @@ export function modalDownload(istree: boolean) {
 export function modalUpdateLog() {
   useModalStore().showModal('showupdatelog', {})
 }
+
+export function modalShowPost(msg: string, msgid: string) {
+  useModalStore().showModal('showpostmodal', { msg, msgid })
+}
