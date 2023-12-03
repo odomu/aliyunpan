@@ -110,7 +110,7 @@ export function GetExpiresTime(downUrl: string) {
   try {
     let expires = downUrl.substring(downUrl.indexOf('x-oss-expires=') + 'x-oss-expires='.length)
     expires = expires.substring(0, expires.indexOf('&'))
-    return parseInt(expires)
+    return parseInt(expires) * 1000
   } catch {
     return 0
   }

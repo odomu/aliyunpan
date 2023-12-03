@@ -254,6 +254,7 @@ export default class PanDAL {
       AliDirFileList.ApiDirFileList(user_id, drive_id, dirID, '', order, 'folder')
         .then((dir) => {
           if (!dir.next_marker) {
+            dir.dirID = dirID // 修复root
             TreeStore.SaveOneDirFileList(dir, false).then(() => {
               PanDAL.RefreshPanTreeAllNode(drive_id)
               const pantreeStore = usePanTreeStore()
@@ -352,10 +353,9 @@ export default class PanDAL {
   }
 
 
-  static async aUpdateDirFileSize(): Promise<void> {
+  static async aUpdateDirFileSize(drive_id: string): Promise<void> {
     const pantreeStore = usePanTreeStore()
     const user_id = pantreeStore.user_id
-    const drive_id = pantreeStore.drive_id
 
     const diridList = TreeStore.GetDirSizeNeedRefresh(drive_id, 604800)
     const partList: string[] = []

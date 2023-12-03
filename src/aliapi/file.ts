@@ -1,7 +1,7 @@
 import { useSettingStore } from '../store'
 import DebugLog from '../utils/debuglog'
 import message from '../utils/message'
-import { GetOssExpires, HanToPin } from '../utils/utils'
+import { GetExpiresTime, HanToPin } from '../utils/utils'
 import AliHttp from './alihttp'
 import { IAliFileItem, IAliGetDirModel, IAliGetFileModel, IAliGetForderSizeModel } from './alimodels'
 import AliDirFileList from './dirfilelist'
@@ -84,7 +84,7 @@ export default class AliFile {
     const data: IDownloadUrl = {
       drive_id: drive_id,
       file_id: file_id,
-      expire_sec: 0,
+      expire_time: 0,
       url: '',
       size: 0
     }
@@ -103,7 +103,7 @@ export default class AliFile {
     if (AliHttp.IsSuccess(resp.code)) {
       data.url = resp.body.url
       data.size = resp.body.size
-      data.expire_sec = GetOssExpires(data.url)
+      data.expire_time = GetExpiresTime(data.url)
       return data
     } else if (resp.body.code == 'NotFound.FileId') {
       return '文件已从网盘中彻底删除'
@@ -148,7 +148,7 @@ export default class AliFile {
     const data: IVideoPreviewUrl = {
       drive_id: drive_id,
       file_id: file_id,
-      expire_sec: 0,
+      expire_time: 0,
       width: 0,
       height: 0,
       url: '',
@@ -186,7 +186,7 @@ export default class AliFile {
       data.duration = Math.floor(resp.body.video_preview_play_info?.meta?.duration || 0)
       data.width = resp.body.video_preview_play_info?.meta?.width || 0
       data.height = resp.body.video_preview_play_info?.meta?.height || 0
-      data.expire_sec = GetOssExpires(data.url)
+      data.expire_time = GetExpiresTime(data.url)
       return data
     } else if (!AliHttp.HttpCodeBreak(resp.code)) {
       DebugLog.mSaveWarning('ApiVideoPreviewUrl err=' + file_id + ' ' + (resp.code || ''), resp.body)
@@ -215,7 +215,7 @@ export default class AliFile {
           file_id: item.file_id,
           file_extension: item.file_extension,
           url: item.url,
-          expire_sec: GetOssExpires(item.url),
+          expire_time: GetExpiresTime(item.url),
           play_cursor: Math.floor(item?.play_cursor || 0),
           compilation_id: item.compilation_id
         })
@@ -241,7 +241,7 @@ export default class AliFile {
     const data: IDownloadUrl = {
       drive_id: drive_id,
       file_id: file_id,
-      expire_sec: 0,
+      expire_time: 0,
       url: '',
       size: 0
     }
@@ -249,12 +249,20 @@ export default class AliFile {
       const template_list = resp.body.template_list || []
       if (!data.url) {
         for (let i = 0, maxi = template_list.length; i < maxi; i++) {
-          if (template_list[i].template_id && template_list[i].template_id == 'HQ' && template_list[i].status == 'finished') data.url = template_list[i].url
+          if (template_list[i].template_id
+            && template_list[i].template_id == 'HQ'
+            && template_list[i].status == 'finished') {
+            data.url = template_list[i].url
+          }
         }
       }
       if (!data.url) {
         for (let i = 0, maxi = template_list.length; i < maxi; i++) {
-          if (template_list[i].template_id && template_list[i].template_id == 'LQ' && template_list[i].status == 'finished') data.url = template_list[i].url
+          if (template_list[i].template_id
+            && template_list[i].template_id == 'LQ'
+            && template_list[i].status == 'finished') {
+            data.url = template_list[i].url
+          }
         }
       }
 

@@ -10,6 +10,7 @@ import type { SettingOption } from 'artplayer/types/setting'
 import type { Option } from 'artplayer/types/option'
 import AliFileCmd from '../aliapi/filecmd'
 import ASS from 'ass-html5'
+import { IVideoPreviewUrl } from '../aliapi/models'
 
 const appStore = useAppStore()
 const pageVideo = appStore.pageVideo!
@@ -36,7 +37,7 @@ const options: Option = {
   airplay: true,
   mutex: true,
   fullscreen: true,
-  fullscreenWeb: true,
+  fullscreenWeb: false,
   subtitleOffset: false,
   screenshot: true,
   miniProgressBar: false,
@@ -67,7 +68,7 @@ const playM3U8 = (video: HTMLMediaElement, url: string, art: Artplayer) => {
       await getVideoCursor(art, pageVideo.play_cursor)
       art.playbackRate = playbackRate
     })
-    hls.on(HlsJs.Events.ERROR, (event, data) => {
+    hls.on(HlsJs.Events.ERROR, async (event, data) => {
       const errorType = data.type
       const errorDetails = data.details
       const errorFatal = data.fatal
@@ -75,7 +76,11 @@ const playM3U8 = (video: HTMLMediaElement, url: string, art: Artplayer) => {
         if (errorType === HlsJs.ErrorTypes.MEDIA_ERROR) {
           hls.recoverMediaError()
         } else if (errorType === HlsJs.ErrorTypes.NETWORK_ERROR) {
-          art.emit('video:ended', data)
+          if (pageVideo.expire_time && pageVideo.expire_time <= Date.now()) {
+            await getVideoInfo(art)
+          } else {
+            art.emit('video:ended', data)
+          }
         } else {
           hls.destroy()
         }
@@ -392,19 +397,20 @@ const defaultControls = async (art: Artplayer) => {
 
 const getVideoInfo = async (art: Artplayer) => {
   // 获取视频链接
-  const data: any = await AliFile.ApiVideoPreviewUrl(pageVideo.user_id, pageVideo.drive_id, pageVideo.file_id)
+  const data: IVideoPreviewUrl | undefined = await AliFile.ApiVideoPreviewUrl(pageVideo.user_id, pageVideo.drive_id, pageVideo.file_id)
   if (data) {
     // 画质
     const qualitySelector: selectorItem[] = []
+    qualitySelector.push({ url: '', html: '原画' })
     if (data.urlQHD) qualitySelector.push({ url: data.urlQHD, html: '2k高清 2560p' })
     if (data.urlFHD) qualitySelector.push({ url: data.urlFHD, html: '全高清 1080P' })
     if (data.urlHD) qualitySelector.push({ url: data.urlHD, html: '高清 720P' })
     if (data.urlSD) qualitySelector.push({ url: data.urlSD, html: '标清 540P' })
     if (data.urlLD) qualitySelector.push({ url: data.urlLD, html: '流畅 480P' })
-    qualitySelector.unshift({ url: '', html: '原画' })
     const qualityDefault = qualitySelector.find((item) => item.default) || qualitySelector[1]
     qualityDefault.default = true
-    art.url = qualityDefault.url
+    await art.switchUrl(qualityDefault.url)
+    pageVideo.expire_time = data.expire_time
     art.controls.update({
       name: 'quality',
       index: 20,
@@ -420,6 +426,7 @@ const getVideoInfo = async (art: Artplayer) => {
             return
           }
           item.url = data.url
+          pageVideo.expire_time = data.expire_time
         }
         await art.switchQuality(item.url)
       }
@@ -456,7 +463,7 @@ const getPlayList = async (art: Artplayer, file_id?: string) => {
         let fileName = fileList[i].name
         let html = fileName.substring(0, fileName.length - fileExt.length - 1)
         playList.push({
-          url: fileList[i].url,
+          url: '',
           html: html,
           name: fileList[i].name,
           file_id: fileList[i].file_id,
@@ -491,7 +498,7 @@ const getPlayList = async (art: Artplayer, file_id?: string) => {
         $current && Artplayer.utils.addClass($current, 'art-list-icon')
       },
       onSelect: async (item: SettingOption, element: HTMLElement) => {
-        art.emit('video:pause')
+        await art.emit('video:pause')
         await refreshSetting(art, item)
         Artplayer.utils.inverseClass(element, 'art-list-icon')
         return handlerPlayTitle(item.html)
@@ -741,7 +748,7 @@ onBeforeUnmount(() => {
         </a-button>
       </div>
     </a-layout-header>
-    <a-layout-content style='height: calc(100vh - 42px)'>
+    <a-layout-content>
       <div id='artPlayer' style='width: 100%; height: 100%;text-overflow: ellipsis;white-space: nowrap;' />
     </a-layout-content>
   </a-layout>

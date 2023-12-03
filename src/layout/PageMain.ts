@@ -1,5 +1,5 @@
 import ServerHttp from '../aliapi/server'
-import { useAppStore, useFootStore, useSettingStore } from '../store'
+import { useAppStore, useFootStore, usePanTreeStore, useSettingStore } from '../store'
 import AppCache from '../utils/appcache'
 import DownDAL from '../down/DownDAL'
 import UploadDAL from '../transfer/uploaddal'
@@ -82,8 +82,10 @@ export const WinMsg = function (arg: any) {
 let runTime = Math.floor(Date.now() / 1000)
 let chkUpgradeTime1 = Math.floor(Date.now() / 1000)
 let chkUpgradeTime2 = Math.floor(Date.now() / 1000)
-let chkDirSizeTime = 0
-let lockDirSizeTime = false
+let chkBackupDirSizeTime = 0
+let chkResourceDirSizeTime = 0
+let lockBackupDirSizeTime = false
+let lockResourceDirSizeTime = false
 let chkClearDownLogTime = 0
 let chkTokenTime = 0
 let chkTaskTime = 0
@@ -100,7 +102,8 @@ function timeEvent() {
 
   if (nowTime - runTime > 60 * 60 * 24) {
     runTime = nowTime
-    chkDirSizeTime = 0
+    chkBackupDirSizeTime = 0
+    chkResourceDirSizeTime = 0
   }
 
   if (chkUpgradeTime1 > 0 && nowTime - chkUpgradeTime1 > 360) {
@@ -117,20 +120,34 @@ function timeEvent() {
   }
 
   // 自动刷新文件夹大小
-  if (settingStore.uiFolderSize == true
-      && !lockDirSizeTime
+  if (settingStore.uiFolderSize
+    && !lockBackupDirSizeTime
       && nowTime - runTime > 50
-      && chkDirSizeTime >= 10) {
-    lockDirSizeTime = true
-    PanDAL.aUpdateDirFileSize()
+    && chkBackupDirSizeTime >= 10) {
+    lockBackupDirSizeTime = true
+    PanDAL.aUpdateDirFileSize(usePanTreeStore().backup_drive_id)
       .catch((err: any) => {
-        DebugLog.mSaveDanger('aUpdateDirFileSize', err)
+        DebugLog.mSaveDanger('aUpdateBackupDirFileSize', err)
       })
       .then(() => {
-        chkDirSizeTime = 0
-        lockDirSizeTime = false
+        chkBackupDirSizeTime = 0
+        lockBackupDirSizeTime = false
       })
-  } else chkDirSizeTime++
+  } else chkBackupDirSizeTime++
+
+  if (settingStore.uiFolderSize && !lockResourceDirSizeTime && nowTime - runTime > 60
+    && chkResourceDirSizeTime >= 15) {
+    lockResourceDirSizeTime = true
+
+    PanDAL.aUpdateDirFileSize(usePanTreeStore().resource_drive_id)
+      .catch((err: any) => {
+        DebugLog.mSaveDanger('aUpdateResourceDirFileSize', err)
+      })
+      .then(() => {
+        chkResourceDirSizeTime = 0
+        lockResourceDirSizeTime = false
+      })
+  } else chkResourceDirSizeTime++
 
   // 自动清除上传下载日志
   chkClearDownLogTime++

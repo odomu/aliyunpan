@@ -15,7 +15,7 @@ import { humanTime, Sleep } from './format'
 import levenshtein from 'fast-levenshtein'
 import { SpawnOptions } from 'child_process'
 import mpvAPI from '../module/node-mpv'
-import { createTmpFile, delTmpFile, portIsOccupied } from './utils'
+import { createTmpFile, delTmpFile, GetExpiresTime, portIsOccupied } from './utils'
 import { IncomingMessage, ServerResponse } from 'http'
 import AliDirFileList from '../aliapi/dirfilelist'
 
@@ -206,9 +206,11 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
       user_id: token.user_id,
       file_name: name,
       html: name,
-      drive_id, file_id,
-      parent_file_id,
-      play_cursor
+      drive_id: drive_id,
+      file_id: file_id,
+      parent_file_id: parent_file_id,
+      expire_time: 0,
+      play_cursor: play_cursor
     }
     window.WebOpenWindow({ page: 'PageVideo', data: pageVideo, theme: 'dark' })
     return
@@ -242,11 +244,14 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
     }
   }
   // 构造播放参数
-  let url = ''
-  const title = name
-  const titleStr = CleanStringForCmd(title)
-  const referer = token.open_api_enable ? 'https://openapi.aliyundrive.com/' : 'https://www.aliyundrive.com/'
-  const playCursor = humanTime(play_cursor)
+  const playInfo = {
+    playUrl: '',
+    playFileId: file_id,
+    playReferer: token.open_api_enable ? 'https://openapi.aliyundrive.com/' : 'https://www.aliyundrive.com/',
+    playExpireTime: 0,
+    playCursor: humanTime(play_cursor),
+    playTitle: CleanStringForCmd(name)
+  }
   const command = settingStore.uiVideoPlayerPath
   const commandLowerCase = command.toLowerCase()
   const isWindows = window.platform === 'win32'
@@ -268,23 +273,24 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
       message.error('用户token已过期，请点击头像里退出按钮后重新登录账号')
       return
     }
-    url = res.url
+    playInfo.playUrl = res.url
+    playInfo.playExpireTime = GetExpiresTime(res.url)
   }
-  let playerArgs: any = { url, otherArgs: [] }
+  let playerArgs: any = { playUrl: playInfo.playUrl, otherArgs: [] }
   let options: SpawnOptions = { detached: !settingStore.uiVideoPlayerExit }
   let socketPath = isWindows ? '\\\\.\\pipe\\mpvserver' : '/tmp/mpvserver.sock'
   if (isPotplayer) {
     playerArgs = {
-      url: url,
+      playUrl: playInfo.playUrl,
       otherArgs: [
         '/new',
         '/autoplay',
-        `/referer=${argsToStr(referer)}`,
-        `/title=${argsToStr(title)}`
+        `/referer=${argsToStr(playInfo.playReferer)}`,
+        `/title=${argsToStr(playInfo.playTitle)}`
       ]
     }
-    if (playCursor.length > 0 && useSettingStore().uiVideoPlayerHistory) {
-      playerArgs.otherArgs.push(`/seek=${argsToStr(playCursor)}`)
+    if (playInfo.playCursor.length > 0 && useSettingStore().uiVideoPlayerHistory) {
+      playerArgs.otherArgs.push(`/seek=${argsToStr(playInfo.playCursor)}`)
     }
     if (subTitleUrl.length > 0) {
       playerArgs.otherArgs.push(`/sub=${argsToStr(subTitleUrl)}`)
@@ -292,7 +298,7 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
   }
   if (isMpv) {
     playerArgs = {
-      url: url,
+      playUrl: playInfo.playUrl,
       otherArgs: [
         '--idle',
         '--force-window=immediate',
@@ -305,13 +311,13 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
         '--alang=[en,eng,zh,chi,chs,sc,zho]',
         '--slang=[zh,chi,chs,sc,zho,en,eng]',
         `--input-ipc-server=mpvserver`,
-        `--force-media-title=${argsToStr(titleStr)}`,
-        `--referrer=${argsToStr(referer)}`,
-        `--title=${argsToStr(title)}`
+        `--force-media-title=${argsToStr(playInfo.playTitle)}`,
+        `--referrer=${argsToStr(playInfo.playReferer)}`,
+        `--title=${argsToStr(playInfo.playTitle)}`
       ]
     }
-    if (playCursor.length > 0 && useSettingStore().uiVideoPlayerHistory) {
-      playerArgs.otherArgs.push(`--start=${argsToStr(playCursor)}`)
+    if (playInfo.playCursor.length > 0 && useSettingStore().uiVideoPlayerHistory) {
+      playerArgs.otherArgs.push(`--start=${argsToStr(playInfo.playCursor)}`)
     }
     if (subTitleUrl.length > 0) {
       playerArgs.otherArgs.push(`--sub-file=${argsToStr(subTitleUrl)}`)
@@ -353,12 +359,19 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
     const server = http.createServer(async (req: IncomingMessage, res: ServerResponse) => {
       try {
         const { pathname, query } = url.parse(req.url, true)
+        let fileId = query.file_id
         if (pathname === '/play') {
-          // 获取真实播放地址
-          let videoInfo = await getVideoUrl(query.drive_id, query.file_id, false)
+          if (!playInfo.playUrl || fileId != playInfo.playFileId
+            || playInfo.playExpireTime <= Date.now()) {
+            // 获取真实播放地址
+            let videoInfo = await getVideoUrl(query.drive_id, fileId, false)
+            playInfo.playUrl = videoInfo.url
+            playInfo.playFileId = fileId
+            playInfo.playExpireTime = GetExpiresTime(playInfo.playUrl)
+          }
           // 重定向
-          res.writeHead(301, {
-            'Location': videoInfo.url,
+          res.writeHead(302, {
+            'Location': playInfo.playUrl,
             'Content-Type': 'text/plain'
           })
           res.flushHeaders()
@@ -381,7 +394,7 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
   let playIndex = 0
   let port = 0
   let tmpServer: any
-  if ((isMpv || isPotplayer) && settingStore.uiVideoEnablePlayerList) {
+  if (settingStore.uiVideoEnablePlayerList) {
     port = await portIsOccupied(12000)
     tmpServer = await createTmpServer(port)
     fileList = compilation_id ? await getDirFile() : usePanFileStore().ListDataRaw
@@ -479,7 +492,7 @@ async function Image(drive_id: string, file_id: string, name: string): Promise<v
     message.error('在线预览失败 账号失效，操作取消')
     return
   }
-  message.loading('Loading...', 2)
+  message.loading('预览中...', 2)
   const imageidList: string[] = []
   const imagenameList: string[] = []
 
@@ -514,7 +527,7 @@ async function Office(drive_id: string, file_id: string, name: string): Promise<
     message.error('在线预览失败 账号失效，操作取消')
     return
   }
-  message.loading('Loading...', 2)
+  message.loading('预览中...', 2)
   const data = await AliFile.ApiOfficePreViewUrl(user_id, drive_id, file_id)
   if (!data || !data.preview_url) {
     message.error('获取文件预览链接失败，操作取消')

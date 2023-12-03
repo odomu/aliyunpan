@@ -1,7 +1,7 @@
 export interface IDownloadUrl {
   drive_id: string
   file_id: string
-  expire_sec: number
+  expire_time: number
   url: string
   size: number
 }
@@ -10,7 +10,7 @@ export interface IDownloadUrl {
 export interface IVideoPreviewUrl {
   drive_id: string
   file_id: string
-  expire_sec: number
+  expire_time: number
   url: string
   duration: number
   width: number
@@ -38,7 +38,7 @@ export interface ICompilationList {
   file_id: string
   file_extension: string
   url: string
-  expire_sec: number
+  expire_time: number
   play_cursor: number
   compilation_id: string
 }
