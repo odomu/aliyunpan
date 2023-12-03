@@ -2,13 +2,17 @@
 import useSettingStore from './settingstore'
 import AppCache from '../utils/appcache'
 import MySwitch from '../layout/MySwitch.vue'
-import { getUserData } from '../utils/electronhelper'
+import { getUserData, openExternal } from '../utils/electronhelper'
 
 const settingStore = useSettingStore()
 const cb = (val: any) => {
   settingStore.updateStore(val)
 }
 const userData = getUserData()
+
+const handleJumpPath = () => {
+  openExternal(userData)
+}
 </script>
 
 <template>
@@ -127,7 +131,10 @@ const userData = getUserData()
                :readonly='true' />
     </div>
     <div class="settingspace"></div>
-    <div class="settingrow">
+    <div class='settingrow' style='display: flex'>
+      <a-button type='outline' size='small' tabindex='-1' style='margin-right: 16px' @click='handleJumpPath'>
+        打开位置
+      </a-button>
       <a-popconfirm content="确认要清理数据库？" @ok="AppCache.aClearCache('db')">
         <a-button type="outline" size="small" tabindex="-1" status="danger" style="margin-right: 16px">清理数据库</a-button>
       </a-popconfirm>
