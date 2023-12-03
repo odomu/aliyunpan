@@ -289,9 +289,9 @@ export default class ServerHttp {
                             if (err) {
                               return false
                             } else {
-                              message.info('热更新完毕，自动重启应用中...', 0, msgKey)
+                              message.info('热更新完毕，请重新打开应用...', 0, msgKey)
                               await this.Sleep(2000)
-                              window.WebRelaunch()
+                              window.WebToElectron({ cmd: 'exit' })
                               return true
                             }
                           })
