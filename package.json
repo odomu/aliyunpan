@@ -42,7 +42,7 @@
     "dayjs": "^1.11.10",
     "dexie": "^3.2.4",
     "dom-to-image": "^2.6.0",
-    "electron": "21.4.4",
+    "electron": "22.3.25",
     "electron-builder": "^24.9.1",
     "electron-is": "^3.0.0",
     "fast-levenshtein": "^3.0.0",
