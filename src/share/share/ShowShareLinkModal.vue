@@ -194,25 +194,20 @@ const filteredTreeData = computed(() => {
     return treeData.value
   } else {
     const matchedNodes: TreeNodeData[] = []
-    filterTreeNodes(treeData.value, keyword, matchedNodes)
+    for (const node of treeData.value) {
+      if (node.isDir && node.children.length > 0) {
+        for (const cnode of node.children) {
+          if (cnode.title.toLowerCase().includes(keyword)) {
+            matchedNodes.push(cnode)
+          }
+        }
+      } else if (node.isLeaf && node.title.toLowerCase().includes(keyword)) {
+        matchedNodes.push(node)
+      }
+    }
     return matchedNodes
   }
 })
-
-//@ts-ignore
-const filterTreeNodes = (nodes, keyword, matchedNodes) => {
-  for (const node of nodes) {
-    if (node.isDir && node.children.length > 0) {
-      for (const cnode of node.children) {
-        if (cnode.title.toLowerCase().includes(keyword)) {
-          matchedNodes.push(cnode)
-        }
-      }
-    } else if (node.isLeaf && node.title.toLowerCase().includes(keyword)) {
-      matchedNodes.push(node)
-    }
-  }
-}
 
 const handleFilterChange = (val: any) => {
   filterKeyword.value = val
