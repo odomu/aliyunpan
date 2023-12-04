@@ -68,10 +68,9 @@ jobs:
 
       - name: Build Electron App
         run: |
-          npm install -g yarn
-          yarn install
-          yarn build:version
-          yarn build:electron
+          npm install -g pnpm
+          pnpm install
+          pnpm build:electron
         env:
           github_token: ${{ secrets.github_token }}
 

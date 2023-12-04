@@ -29,8 +29,8 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          npm install -g yarn
-          yarn install
+          npm install -g pnpm
+          pnpm install
 
       - name: Make Aria2c Executable
         if: matrix.os != 'windows-latest'

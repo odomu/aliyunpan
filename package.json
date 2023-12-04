@@ -1,7 +1,7 @@
 {
   "name": "alixby",
   "description": "阿里云盘小白羊",
-  "version": "3.23.120417",
+  "version": "3.23.120421",
   "main": "dist/electron/main/index.js",
   "author": {
     "name": "Odomu",
@@ -12,8 +12,8 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && node version.mjs && vite build",
     "build:version": "node version.mjs",
-    "build:electron": "npm run build && electron-builder",
-    "build:test": "npm run build && electron-builder --dir"
+    "build:electron": "pnpm run build && electron-builder",
+    "build:test": "pnpm run build && electron-builder --dir"
   },
   "engines": {
     "node": ">=16.0.0"
