@@ -1,6 +1,6 @@
 <script setup lang='ts'>
 import { ref } from 'vue'
-import { IShareSiteModel, useAppStore, useServerStore } from '../../store'
+import { IShareSiteModel, useServerStore } from '../../store'
 import { B64decode } from '../../utils/format'
 import { modalDaoRuShareLink } from '../../utils/modal'
 import message from '../../utils/message'
@@ -8,7 +8,6 @@ import { openExternal } from '../../utils/electronhelper'
 import ServerHttp from '../../aliapi/server'
 import DebugLog from '../../utils/debuglog'
 
-const appStore = useAppStore()
 const serverStore = useServerStore()
 const onLoading = ref(true)
 const content = ref()
@@ -34,16 +33,24 @@ const handleSite = (item: IShareSiteModel) => {
   }
   // 动态创建WebView
   webview.value = document.createElement('webview')
-  webview.value.src = siteUrl.value
   webview.value.className = 'site-content'
+  webview.value.setAttribute('src', siteUrl.value)
   webview.value.setAttribute('allowpopups', '')
+  webview.value.setAttribute('partition', 'site:webview')
+  webview.value.setAttribute('nodeintegrationinsubframes', '')
   content.value.appendChild(webview.value)
   webview.value.addEventListener('did-start-loading', handleStartLoad)
   webview.value.addEventListener('new-window', handleSiteShareUrl)
+  webview.value.addEventListener('will-navigate', handleSiteShareUrl)
 }
 const handleHideLeft = () => {
   hideLeft.value = !hideLeft.value
   emits('hideLeft', hideLeft.value)
+}
+
+const handleClearCookies = async () => {
+  await window.WebClearCookies({ origin: webview.value.src, storages: ['cookies', 'localstorage'] })
+  message.success('清除Cookies成功')
 }
 
 const handleStartLoad = () => {
@@ -51,14 +58,15 @@ const handleStartLoad = () => {
   setTimeout(() => onLoading.value = false, 1000)
 }
 
-const handleSiteShareUrl = (event: any) => {
+
+const handleSiteShareUrl = async (event: any) => {
   // console.log('handleSiteShareUrl', event)
   // 获取点击的 URL
   const url = event.url || ''
-  if (url.includes('aliyundrive')) {
+  if (/(aliyundrive|alipan).com\/s\/[0-9a-zA-Z_]{11,}/.test(url)) {
     modalDaoRuShareLink(url)
   } else {
-    webview.value.src = url
+    webview.value.loadURL(url)
   }
 }
 
@@ -66,6 +74,7 @@ const handleClose = () => {
   siteUrl.value = ''
   if (webview.value) {
     webview.value.removeEventListener('new-window', handleSiteShareUrl)
+    webview.value.removeEventListener('will-navigate', handleSiteShareUrl)
     webview.value.removeEventListener('did-start-loading', handleStartLoad)
     content.value.removeChild(webview.value)
     webview.value = {}
@@ -147,6 +156,13 @@ const handleForward = () => {
     </a-tabs>
   </div>
   <div class='top-btn' style='height: 32px' v-show='siteUrl'>
+    <div class='toppanbtn'>
+      <a-popconfirm content='确认要当前网站Cookies？' @ok='handleClearCookies'>
+        <a-button type='text' size='small' tabindex='-1'>
+          <i class='iconfont icondelete' />清除Cookies
+        </a-button>
+      </a-popconfirm>
+    </div>
     <div class='toppanbtn'>
       <a-button type='text' size='small' tabindex='-1' @click='openExternal(webview.src || siteUrl)'>
         <i class='iconfont icondebug' />浏览器打开

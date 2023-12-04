@@ -1,8 +1,22 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useAppStore, useKeyboardStore, KeyboardState, useOtherShareStore, useWinStore, IOtherShareLinkModel } from '../../store'
+import {
+  IOtherShareLinkModel,
+  KeyboardState,
+  useAppStore,
+  useKeyboardStore,
+  useOtherShareStore,
+  useWinStore
+} from '../../store'
 import ShareDAL from './ShareDAL'
-import { onShowRightMenu, onHideRightMenuScroll, TestCtrl, TestKey, TestKeyboardScroll, TestKeyboardSelect } from '../../utils/keyboardhelper'
+import {
+  onHideRightMenuScroll,
+  onShowRightMenu,
+  TestCtrl,
+  TestKey,
+  TestKeyboardScroll,
+  TestKeyboardSelect
+} from '../../utils/keyboardhelper'
 import { copyToClipboard, getFromClipboard, openExternal } from '../../utils/electronhelper'
 import message from '../../utils/message'
 
@@ -105,7 +119,7 @@ const handleDeleteSelectedLink = (delby: string) => {
 const handleDaoRuLink = () => {
   daoruModel.value = true
   const txt = getFromClipboard()
-  if (txt.indexOf('.aliyundrive.com/s/') > 0) {
+  if (txt.indexOf('.aliyundrive.com/s/') > 0 || txt.indexOf('.alipan.com/s/') > 0) {
     daoruModelText.value = txt
     setTimeout(() => {
       document.getElementById('OSRDaoRuLink')?.focus()
