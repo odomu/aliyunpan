@@ -16,8 +16,8 @@ let INTERVAL = 1000
 const qpsMap = new Map()
 const qpsController = () => async (config: any) => {
   if (config.url.indexOf('api.aliyundrive.com') < 0
-    && config.url.indexOf('openapi.aliyundrive.com') < 0) return config
-  QPS = config.url.includes('openapi.aliyundrive.com') ? 3 : 30
+    && config.url.indexOf('openapi') < 0) return config
+  QPS = config.url.indexOf('openapi') > 0 ? 3 : 30
   const now = Math.trunc(performance.timeOrigin + performance.now())
   let { count, ts } = qpsMap.get(config.url) || { count: 1, ts: now }
   // 通过位运算实现取整，提高效率
@@ -49,7 +49,9 @@ const qpsController = () => async (config: any) => {
   let sleep = ts - now
   sleep = sleep > 0 ? sleep + OFFSET : 0
   // 让当前的请求睡一会儿再请求
-  await new Promise<void>(resolve => setTimeout(() => resolve(), sleep))
+  if (sleep > 0) {
+    await new Promise<void>(resolve => setTimeout(() => resolve(), sleep))
+  }
   return config
 }
 

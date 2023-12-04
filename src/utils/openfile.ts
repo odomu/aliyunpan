@@ -247,7 +247,7 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
   const playInfo = {
     playUrl: '',
     playFileId: file_id,
-    playReferer: token.open_api_enable ? 'https://openapi.aliyundrive.com/' : 'https://www.aliyundrive.com/',
+    playReferer: token.open_api_enable ? 'https://openapi.alipan.com/' : 'https://www.aliyundrive.com/',
     playExpireTime: 0,
     playCursor: humanTime(play_cursor),
     playTitle: CleanStringForCmd(name)

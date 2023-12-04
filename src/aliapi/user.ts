@@ -150,7 +150,7 @@ export default class AliUser {
       OpenApiTokenLockMap.delete(token.user_id)
       return true
     }
-    let url = 'https://openapi.aliyundrive.com/oauth/access_token'
+    let url = 'https://openapi.alipan.com/oauth/access_token'
     let client_id = ''
     let client_secret = ''
     if (useSettingStore().uiOpenApiOauthUrl !== ''
@@ -212,7 +212,7 @@ export default class AliUser {
       width: 348,
       height: 400
     }
-    const url = 'https://openapi.aliyundrive.com/oauth/authorize/qrcode'
+    const url = 'https://openapi.alipan.com/oauth/authorize/qrcode'
     const resp = await AliHttp.Post(url, postData, '', '')
     if (AliHttp.IsSuccess(resp.code)) {
       return resp.body.qrCodeUrl
@@ -262,7 +262,7 @@ export default class AliUser {
       client_id: useSettingStore().uiOpenApiClientId,
       client_secret: useSettingStore().uiOpenApiClientSecret
     }
-    const url = 'https://openapi.aliyundrive.com/oauth/access_token'
+    const url = 'https://openapi.alipan.com/oauth/access_token'
     const resp = await AliHttp.Post(url, postData, '', '')
     if (AliHttp.IsSuccess(resp.code)) {
       return {

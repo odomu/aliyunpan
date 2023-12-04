@@ -189,7 +189,7 @@ const handleForward = () => {
       </a-button>
     </div>
     <div class='toppanbtn'>
-      <a-button type='text' size='small' tabindex='-1' @click='handleClose'>
+      <a-button type='text' status='danger' size='small' tabindex='-1' @click='handleClose'>
         <i class='iconfont iconclose' />关闭
       </a-button>
     </div>
@@ -210,10 +210,11 @@ const handleForward = () => {
 }
 
 .share-site-tabs {
-  .arco-tabs-content-item-active .arco-tabs-pane {
+  height: 100%;
+
+  .arco-tabs-content-list .arco-tabs-content-item-active .arco-tabs-pane {
     overflow-y: auto;
-    height: calc(100%);
-    box-sizing: border-box;
+    height: 540px;
   }
 
   .site-list {
@@ -229,7 +230,7 @@ const handleForward = () => {
 
     .site-list-item {
       width: 33.33%;
-      padding: 28px 0;
+      padding: 26px 0;
       text-align: center;
       font-size: 16px;
       color: rgb(188, 143, 143);

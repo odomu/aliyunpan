@@ -11,6 +11,7 @@ import { copyToClipboard, openExternal } from '../utils/electronhelper'
 
 const settingStore = useSettingStore()
 const qrCodeLoading = ref(false)
+const intervalId = ref()
 const qrCodeUrl = ref('')
 const qrCodeStatusType = ref()
 const qrCodeStatusTips = ref()
@@ -74,18 +75,18 @@ const refreshQrCode = async () => {
     qrCodeStatusType.value = 'info'
     qrCodeStatusTips.value = '状态：等待扫码登录'
     // 监听状态
-    const intervalId = setInterval(async () => {
+    intervalId.value = setInterval(async () => {
       const { authCode, statusCode, statusType, statusTips } = await AliUser.OpenApiQrCodeStatus(codeUrl)
       if (!statusCode) {
         refreshStatus()
-        clearInterval(intervalId)
+        clearInterval(intervalId.value)
         return
       }
       qrCodeStatusType.value = statusType
       qrCodeStatusTips.value = statusTips
       if (statusCode === 'QRCodeExpired') {
         message.error('二维码已超时，请刷新二维码')
-        clearInterval(intervalId)
+        clearInterval(intervalId.value)
         refreshStatus()
         return
       }
@@ -107,7 +108,7 @@ const refreshQrCode = async () => {
           open_api_access_token: token.open_api_access_token,
           refresh: true
         })
-        clearInterval(intervalId)
+        clearInterval(intervalId.value)
         message.success('登陆成功')
         refreshStatus()
       }
@@ -115,6 +116,10 @@ const refreshQrCode = async () => {
   }
 }
 
+const closeQrCode = () => {
+  refreshStatus()
+  clearInterval(intervalId.value)
+}
 </script>
 
 <template>
@@ -161,7 +166,7 @@ const refreshQrCode = async () => {
                 <a-input v-model.trim='settingStore.uiOpenApiClientId'
                          :style="{ width: '180px' }"
                          placeholder='客户端ID'
-                         @update:model-value='cb({ uiOpenApiClientId: $event })'/>
+                         @update:model-value='cb({ uiOpenApiClientId: $event })' />
               </div>
             </a-col>
             <a-col flex='180px'>
@@ -171,21 +176,28 @@ const refreshQrCode = async () => {
                   v-model.trim='settingStore.uiOpenApiClientSecret'
                   :style="{ width: '180px' }"
                   placeholder='客户端密钥'
-                  @update:model-value='cb({ uiOpenApiClientSecret: $event })'/>
+                  @update:model-value='cb({ uiOpenApiClientSecret: $event })' />
               </div>
             </a-col>
           </a-row>
           <div class='settingspace'></div>
           <div class='settinghead'>:二维码(手机扫码)</div>
-          <div class='settingrow'>
+          <div class='settingrow' style='display:flex;'>
             <a-button type='outline' size='small' tabindex='-1' :loading='qrCodeLoading' @click='refreshQrCode()'>
               <template #icon>
                 <i class='iconfont iconreload-1-icon' />
               </template>
               刷新二维码
             </a-button>
+            <a-button style='margin-left: 10px' status='success' type='outline' v-if='qrCodeUrl' size='small'
+                      tabindex='-1' @click='closeQrCode()'>
+              <template #icon>
+                <i class='iconfont iconclose' />
+              </template>
+              关闭二维码
+            </a-button>
           </div>
-          <div class='settingrow' v-if='qrCodeUrl' >
+          <div class='settingrow' v-if='qrCodeUrl'>
             <div class='settingspace'></div>
             <a-alert :type='qrCodeStatusType'> {{ qrCodeStatusTips }}</a-alert>
             <a-image
