@@ -65,8 +65,6 @@ const handleSiteShareUrl = async (event: any) => {
   const url = event.url || ''
   if (/(aliyundrive|alipan).com\/s\/[0-9a-zA-Z_]{11,}/.test(url)) {
     modalDaoRuShareLink(url)
-  } else {
-    webview.value.loadURL(url)
   }
 }
 

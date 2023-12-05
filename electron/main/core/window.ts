@@ -272,9 +272,19 @@ export function createElectronWindow(width: number, height: number, center: bool
   })
   // 处理webview跳转
   win.webContents.addListener('did-attach-webview', (event, webContent) => {
+    webContent.on('before-input-event', (_, input: Electron.Input) => {
+      if (input.type === 'keyDown' && input.control && input.shift && input.key === 'F12') {
+        webContent.isDevToolsOpened()
+          ? webContent.closeDevTools()
+          : webContent.openDevTools({ mode: 'undocked' })
+      }
+    })
     // 不允许的网址则阻止页面跳转并拉取浏览器展示页面
     webContent.addListener('new-window', (e, url) => {
       e.preventDefault()
+      if (!/(aliyundrive|alipan).com\/s\/[0-9a-zA-Z_]{11,}/.test(url)) {
+        webContent.loadURL(url)
+      }
     })
     // 判断是否需要拦截webview中的链接跳转
     webContent.on('will-navigate', (e, url) => {
@@ -282,6 +292,12 @@ export function createElectronWindow(width: number, height: number, center: bool
         e.preventDefault()
       }
     })
+  })
+  win.webContents.addListener('new-window', (e, url) => {
+    e.preventDefault()
+  })
+  win.webContents.on('will-navigate', (e, url) => {
+    e.preventDefault()
   })
   win.webContents.on('did-create-window', (childWindow) => {
     if (is.windows()) {
