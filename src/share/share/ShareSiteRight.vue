@@ -37,11 +37,14 @@ const handleSite = (item: IShareSiteModel) => {
   webview.value.setAttribute('src', siteUrl.value)
   webview.value.setAttribute('allowpopups', '')
   webview.value.setAttribute('partition', 'site:webview')
-  webview.value.setAttribute('nodeintegrationinsubframes', '')
+  webview.value.setAttribute('nodeintegration', '')
+  webview.value.setAttribute('disablewebsecurity', '')
+  webview.value.setAttribute('webpreferences', 'allowRunningInsecureContent')
   content.value.appendChild(webview.value)
   webview.value.addEventListener('did-start-loading', handleStartLoad)
   webview.value.addEventListener('new-window', handleSiteShareUrl)
   webview.value.addEventListener('will-navigate', handleSiteShareUrl)
+  webview.value.addEventListener('did-redirect-navigation', handleSiteShareUrl)
 }
 const handleHideLeft = () => {
   hideLeft.value = !hideLeft.value
@@ -73,6 +76,7 @@ const handleClose = () => {
   if (webview.value) {
     webview.value.removeEventListener('new-window', handleSiteShareUrl)
     webview.value.removeEventListener('will-navigate', handleSiteShareUrl)
+    webview.value.removeEventListener('did-redirect-navigation', handleSiteShareUrl)
     webview.value.removeEventListener('did-start-loading', handleStartLoad)
     content.value.removeChild(webview.value)
     webview.value = {}

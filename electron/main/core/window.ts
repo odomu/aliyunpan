@@ -286,7 +286,7 @@ export function createElectronWindow(width: number, height: number, center: bool
         webContent.loadURL(url)
       }
     })
-    // 判断是否需要拦截webview中的链接跳转
+    // 拦截链接跳转
     webContent.on('will-navigate', (e, url) => {
       if (/(aliyundrive|alipan).com\/s\/[0-9a-zA-Z_]{11,}/.test(url)) {
         e.preventDefault()
