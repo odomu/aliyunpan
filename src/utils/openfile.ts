@@ -8,7 +8,6 @@ import { IPageCode, IPageImage, IPageOffice, IPageVideo } from '../store/appstor
 import UserDAL from '../user/userdal'
 import { clickWait } from './debounce'
 import DebugLog from './debuglog'
-import { CleanStringForCmd } from './filehelper'
 import message from './message'
 import { modalArchive, modalArchivePassword, modalSelectPanDir } from './modal'
 import { humanTime } from './format'
@@ -192,7 +191,7 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
     playExpireTime: 0,
     playFileListPath: '',
     playCursor: humanTime(playCursorInfo.play_cursor),
-    playTitle: CleanStringForCmd(name),
+    playTitle: name,
     playCommand: settingStore.uiVideoPlayerPath
   }
   const isWindows = window.platform === 'win32'

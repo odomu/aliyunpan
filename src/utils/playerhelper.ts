@@ -303,7 +303,7 @@ const PlayerUtils = {
         && !useSettingStore().uiVideoPlayerHistory) {
         return
       }
-      if (command.includes('mpv')) {
+      if (command.toLowerCase().includes('mpv')) {
         await Sleep(1000)
         await this.mpvPlayer(otherArgs.user_id, otherArgs.socketPath, otherArgs.fileList, otherArgs.playInfo)
       }
