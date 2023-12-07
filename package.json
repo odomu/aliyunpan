@@ -1,7 +1,7 @@
 {
   "name": "alixby",
   "description": "阿里云盘小白羊",
-  "version": "3.23.120513",
+  "version": "3.23.120721",
   "main": "dist/electron/main/index.js",
   "author": {
     "name": "Odomu",
@@ -27,12 +27,14 @@
     "@types/howler": "^2.2.11",
     "@types/lodash": "^4.14.202",
     "@types/markdown-it": "^13.0.7",
-    "@types/node": "^20.10.2",
+    "@types/node": "^20.10.4",
     "@types/secp256k1": "^4.0.6",
     "@types/uuid": "^9.0.7",
     "@vitejs/plugin-vue": "^4.5.1",
     "@vitejs/plugin-vue-jsx": "^3.1.0",
     "@vue/runtime-core": "^3.3.10",
+    "@vue/runtime-dom": "^3.3.10",
+    "@vue/shared": "^3.3.10",
     "ant-design-vue": "3.2.20",
     "aria2-lib": "1.0.1",
     "artplayer": "^5.0.9",
@@ -49,7 +51,7 @@
     "fast-levenshtein": "^3.0.0",
     "fix-path": "^4.0.0",
     "fuzzysort": "^2.0.4",
-    "hls.js": "^1.4.12",
+    "hls.js": "^1.4.13",
     "howler": "^2.2.4",
     "isomorphic-fetch": "^3.0.0",
     "jschardet": "^3.0.0",
@@ -61,9 +63,9 @@
     "secp256k1": "^5.0.0",
     "socks-proxy-agent": "^8.0.2",
     "sudo-prompt": "^9.2.1",
-    "terser": "^5.24.0",
+    "terser": "^5.25.0",
     "tree-kill": "^1.2.2",
-    "typescript": "^5.3.2",
+    "typescript": "^5.3.3",
     "uuid": "^9.0.1",
     "uuid-by-string": "^4.0.0",
     "viewerjs": "^1.11.6",
@@ -71,8 +73,8 @@
     "vite-plugin-electron": "0.15.4",
     "vite-plugin-electron-renderer": "0.14.5",
     "vite-plugin-resolve": "^2.5.1",
-    "vue": "^3.3.9",
-    "vue-tsc": "^1.8.24"
+    "vue": "^3.3.10",
+    "vue-tsc": "^1.8.25"
   },
   "debug": {
     "env": {

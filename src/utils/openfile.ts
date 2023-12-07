@@ -11,27 +11,11 @@ import DebugLog from './debuglog'
 import { CleanStringForCmd } from './filehelper'
 import message from './message'
 import { modalArchive, modalArchivePassword, modalSelectPanDir } from './modal'
-import { humanTime, Sleep } from './format'
-import levenshtein from 'fast-levenshtein'
+import { humanTime } from './format'
 import { SpawnOptions } from 'child_process'
-import mpvAPI from '../module/node-mpv'
-import { createTmpFile, delTmpFile, GetExpiresTime, portIsOccupied } from './utils'
-import { IncomingMessage, ServerResponse } from 'http'
-import AliDirFileList from '../aliapi/dirfilelist'
+import { GetExpiresTime } from './utils'
+import PlayerUtils from './playerhelper'
 
-function filterSubtitleFile(name: string, subTitlesList: any[]) {
-  // 自动加载同名字幕
-  const similarity: any = subTitlesList.reduce((min: any, item, index) => {
-    // 莱文斯坦距离算法(计算相似度)
-    const distance = levenshtein.get(name, item.name, { useCollator: true })
-    if (distance < min.distance) {
-      min.distance = distance
-      min.index = index
-    }
-    return min
-  }, { distance: Infinity, index: -1 })
-  return (similarity.index !== -1) ? subTitlesList[similarity.index].file_id : ''
-}
 
 export async function menuOpenFile(file: IAliGetFileModel): Promise<void> {
   if (clickWait('menuOpenFile', 500)) return
@@ -82,7 +66,7 @@ export async function menuOpenFile(file: IAliGetFileModel): Promise<void> {
     const isViolation = file.icon == 'iconweifa'
     if (uiVideoPlayer === 'other') {
       if (uiVideoSubtitleMode === 'auto') {
-        subTitleFileId = filterSubtitleFile(file.name, subTitlesList)
+        subTitleFileId = PlayerUtils.filterSubtitleFile(file.name, subTitlesList)
       } else if (uiVideoSubtitleMode === 'select') {
         modalSelectPanDir('select', parent_file_id, async (_user_id: string, _drive_id: string, to_drive_id: string, dirID: string, _dirName: string) => {
           await Video(token, to_drive_id, file_id, parent_file_id, file.name, isViolation, file.description, dirID, file.compilation_id)
@@ -165,32 +149,8 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
     return
   }
   message.loading('加载视频中...', 2)
-  const getPlayCursor = async (file_id: string): Promise<number> => {
-    // 获取文件信息
-    const info = await AliFile.ApiFileInfo(token.user_id, drive_id, file_id)
-    if (info && typeof info == 'string') {
-      message.error('在线预览失败 获取文件信息出错：' + info)
-      return -1
-    }
-    let play_duration: number = info?.video_media_metadata.duration || info?.user_meta.duration || 0
-    let play_cursor: number = 0
-    if (info?.play_cursor) {
-      play_cursor = info?.play_cursor
-    } else if (info?.user_meta) {
-      const meta = JSON.parse(info?.user_meta)
-      if (meta.play_cursor) {
-        play_cursor = parseFloat(meta.play_cursor)
-      }
-    }
-    // 防止意外跳转
-    if (play_duration > 0 && play_duration > 0
-      && play_cursor >= play_duration - 30) {
-      play_cursor = play_duration - 30
-    }
-    return play_cursor
-  }
-  let play_cursor = await getPlayCursor(file_id)
-  if (play_cursor == -1) {
+  let playCursorInfo = await PlayerUtils.getPlayCursor(token.user_id, drive_id, file_id)
+  if (!playCursorInfo) {
     return
   }
   const settingStore = useSettingStore()
@@ -200,7 +160,6 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
         usePanFileStore().mColorFiles('ce74c3c', success)
       })
   }
-
   if (settingStore.uiVideoPlayer == 'web') {
     const pageVideo: IPageVideo = {
       user_id: token.user_id,
@@ -210,30 +169,10 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
       file_id: file_id,
       parent_file_id: parent_file_id,
       expire_time: 0,
-      play_cursor: play_cursor
+      play_cursor: playCursorInfo.play_cursor
     }
     window.WebOpenWindow({ page: 'PageVideo', data: pageVideo, theme: 'dark' })
     return
-  }
-
-  const getVideoUrl = async (drive_id: string, file_id: string, weifa: boolean) => {
-    let url = ''
-    let mode = ''
-    if (settingStore.uiVideoMode == 'online') {
-      const data = await AliFile.ApiVideoPreviewUrl(token.user_id, drive_id, file_id)
-      if (data && data.url != '') {
-        url = data.url
-        mode = '【转码】'
-      }
-    }
-    if (!url && !weifa) {
-      const data = await AliFile.ApiFileDownloadUrl(token.user_id, drive_id, file_id, 14400)
-      if (typeof data !== 'string' && data.url && data.url != '') {
-        url = data.url
-        mode = '【原画】'
-      }
-    }
-    return { url, mode }
   }
   // 加载网盘内字幕文件
   let subTitleUrl = ''
@@ -244,37 +183,39 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
     }
   }
   // 构造播放参数
-  const playInfo = {
+  let playInfo: any = {
+    drive_id: drive_id,
     playUrl: '',
+    playList: [],
     playFileId: file_id,
     playReferer: token.open_api_enable ? 'https://openapi.alipan.com/' : 'https://www.aliyundrive.com/',
     playExpireTime: 0,
-    playCursor: humanTime(play_cursor),
-    playTitle: CleanStringForCmd(name)
+    playFileListPath: '',
+    playCursor: humanTime(playCursorInfo.play_cursor),
+    playTitle: CleanStringForCmd(name),
+    playCommand: settingStore.uiVideoPlayerPath
   }
-  const command = settingStore.uiVideoPlayerPath
-  const commandLowerCase = command.toLowerCase()
   const isWindows = window.platform === 'win32'
   const isMacOrLinux = ['darwin', 'linux'].includes(window.platform)
-  const isMpv = commandLowerCase.indexOf('mpv') > 0
-  const isPotplayer = commandLowerCase.indexOf('potplayer') > 0
+  const isMpv = playInfo.playCommand.toLowerCase().includes('mpv')
+  const isPotplayer = playInfo.playCommand.toLowerCase().includes('potplayer')
   const argsToStr = (args: string) => isWindows ? `"${args}"` : `'${args}'`
   if (!isWindows && !isMacOrLinux) {
     message.error('不支持的系统，操作取消')
     return
   }
   if ((!isPotplayer && !isMpv) || ((isPotplayer || isMpv) && !settingStore.uiVideoEnablePlayerList)) {
-    const res = await getVideoUrl(drive_id, file_id, weifa)
-    if (!res.url) {
+    const url = await PlayerUtils.getVideoUrl(token.user_id, drive_id, file_id, weifa)
+    if (!url) {
       message.error('视频地址解析失败，操作取消')
       return
     }
-    if (res.url.indexOf('x-oss-additional-headers=referer') > 0) {
+    if (url.indexOf('x-oss-additional-headers=referer') > 0) {
       message.error('用户token已过期，请点击头像里退出按钮后重新登录账号')
       return
     }
-    playInfo.playUrl = res.url
-    playInfo.playExpireTime = GetExpiresTime(res.url)
+    playInfo.playUrl = url
+    playInfo.playExpireTime = GetExpiresTime(url)
   }
   let playerArgs: any = { playUrl: playInfo.playUrl, otherArgs: [] }
   let options: SpawnOptions = { detached: !settingStore.uiVideoPlayerExit }
@@ -289,7 +230,7 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
         `/title=${argsToStr(playInfo.playTitle)}`
       ]
     }
-    if (playInfo.playCursor.length > 0 && useSettingStore().uiVideoPlayerHistory) {
+    if (playInfo.playCursor.length > 0 && settingStore.uiVideoPlayerHistory) {
       playerArgs.otherArgs.push(`/seek=${argsToStr(playInfo.playCursor)}`)
     }
     if (subTitleUrl.length > 0) {
@@ -301,6 +242,7 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
       playUrl: playInfo.playUrl,
       otherArgs: [
         '--idle',
+        '--msg-level=all=no,ipc=v',
         '--force-window=immediate',
         '--hwdec=auto',
         '--geometry=80%',
@@ -316,172 +258,46 @@ async function Video(token: ITokenInfo, drive_id: string, file_id: string, paren
         `--title=${argsToStr(playInfo.playTitle)}`
       ]
     }
-    if (playInfo.playCursor.length > 0 && useSettingStore().uiVideoPlayerHistory) {
+    if (playInfo.playCursor.length > 0 && settingStore.uiVideoPlayerHistory) {
       playerArgs.otherArgs.push(`--start=${argsToStr(playInfo.playCursor)}`)
     }
     if (subTitleUrl.length > 0) {
       playerArgs.otherArgs.push(`--sub-file=${argsToStr(subTitleUrl)}`)
     }
   }
-  if (settingStore.uiVideoPlayerParams.length > 0) {
+  if (isMpv && settingStore.uiVideoPlayerParams.length > 0) {
     playerArgs.otherArgs.push(...settingStore.uiVideoPlayerParams.replaceAll(/\s+/g, '').split(','))
   }
-  const args = [argsToStr(playerArgs.url), ...Array.from(new Set(playerArgs.otherArgs))]
-  const getDirFile = async () => {
-    const dir = await AliDirFileList.ApiDirFileList(token.user_id, drive_id, parent_file_id, '', 'name asc', '')
-    const curDirFileList = []
-    for (let item of dir.items) {
-      if (item.isDir) continue
-      curDirFileList.push({
-        category: item.category,
-        description: item.description,
-        name: item.name,
-        file_id: item.file_id,
-        ext: item.ext
-      })
-    }
-    return curDirFileList.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'))
-  }
-  const createPlayListFile = async (port: number, fileList: any[]) => {
-    let header = '#EXTM3U\r\n#EXT-X-ALLOW-CACHE:NO\r\n'
-    let end = '#EXT-X-ENDLIST\r\n'
-    let file = ''
-    for (let item of fileList) {
-      const url = `http://127.0.0.1:${port}/play?drive_id=${drive_id}&file_id=${item.file_id}`
-      file += '#EXTINF:0,' + item.name + '\r\n' + url + '\r\n'
-    }
-    return createTmpFile(header + file + end, 'play_list.m3u')
-  }
-  const createTmpServer = async (port: number) => {
-    const http = require('http')
-    const url = require('url')
-    // 创建服务器
-    const server = http.createServer(async (req: IncomingMessage, res: ServerResponse) => {
-      try {
-        const { pathname, query } = url.parse(req.url, true)
-        let fileId = query.file_id
-        if (pathname === '/play') {
-          if (!playInfo.playUrl || fileId != playInfo.playFileId
-            || playInfo.playExpireTime <= Date.now()) {
-            // 获取真实播放地址
-            let videoInfo = await getVideoUrl(query.drive_id, fileId, false)
-            playInfo.playUrl = videoInfo.url
-            playInfo.playFileId = fileId
-            playInfo.playExpireTime = GetExpiresTime(playInfo.playUrl)
-          }
-          // 重定向
-          res.writeHead(302, {
-            'Location': playInfo.playUrl,
-            'Content-Type': 'text/plain'
-          })
-          res.flushHeaders()
-          res.end()
-        } else {
-          res.writeHead(404, { 'Content-Type': 'text/plain' })
-          res.end('Not Found')
-        }
-      } catch (error) {
-        res.writeHead(500, { 'Content-Type': 'text/plain' })
-        res.end('Internal Server Error')
-      }
-    })
-    server.listen(port)
-    return server
-  }
-  let fileList: any
-  let playList: any
-  let tmpFile = ''
-  let playIndex = 0
-  let port = 0
+  const playArgs: any[] = [argsToStr(playerArgs.playUrl), ...Array.from(new Set(playerArgs.otherArgs))]
+  let fileList: IAliGetFileModel[] = []
   let tmpServer: any
   if (settingStore.uiVideoEnablePlayerList) {
-    port = await portIsOccupied(12000)
-    tmpServer = await createTmpServer(port)
-    fileList = compilation_id ? await getDirFile() : usePanFileStore().ListDataRaw
-    playList = fileList.filter((v: any) => v.category === 'video')
-    tmpFile = await createPlayListFile(port, playList)
+    const port = await PlayerUtils.portIsOccupied(12000)
+    fileList = compilation_id ? await PlayerUtils.getDirFileList(token.user_id, drive_id, parent_file_id) : usePanFileStore().ListDataRaw
+    playInfo.playList = fileList.filter((v: any) => v.category === 'video')
+    playInfo.playFileListPath = await PlayerUtils.createPlayListFile(
+      port, file_id,
+      playCursorInfo.play_duration,
+      playCursorInfo.play_cursor,
+      isPotplayer ? 'dpl' : 'm3u',
+      playInfo.playList
+    )
+    tmpServer = await PlayerUtils.createTmpServer(port, token.user_id, playInfo)
     // console.log('tmpFile', tmpFile)
-    playIndex = playList.findIndex((v: any) => v.file_id == file_id)
-    args.shift()
+    const playIndex = playInfo.playList.findIndex((v: any) => v.file_id == file_id)
+    playArgs.shift()
     if (isMpv) {
-      args.push(`--playlist-start=${playIndex}`)
+      playArgs.push(`--playlist-start=${playIndex}`)
     }
-    args.unshift(tmpFile)
+    playArgs.unshift(playInfo.playFileListPath)
   }
-  window.WebSpawnSync({ command, args, options }, async (res: any) => {
-    // 如果不开启播放列表和记录历史则不需要启动Server
-    if (!settingStore.uiVideoEnablePlayerList && !settingStore.uiVideoPlayerHistory) {
-      return
+  const otherArgs = { user_id: token.user_id, socketPath, fileList, playInfo }
+  await PlayerUtils.startPlayer(playInfo.playCommand, playArgs, otherArgs, options, async () => {
+    if (settingStore.uiVideoEnablePlayerList) {
+      PlayerUtils.delTmpFile(playInfo.playFileListPath)
+      await tmpServer.close()
     }
-    if (isMpv && !res.error) {
-      let currentTime = 0
-      let currentFileId = file_id
-      let lastEndTime = 0
-      let mpv: mpvAPI = new mpvAPI({ debug: false, verbose: false, socket: socketPath })
-      try {
-        await Sleep(1000)
-        await mpv.start().catch()
-        if (settingStore.uiVideoEnablePlayerList) {
-          await mpv.loadPlaylist(tmpFile)
-          await mpv.play()
-          mpv.on('status', (status: { property: string, value: any }) => {
-            // console.log('status', status)
-            if (status.property === 'playlist-pos' && status.value != -1) {
-              // 保存历史
-              const item = playList[status.value]
-              AliFile.ApiUpdateVideoTime(token.user_id, drive_id, currentFileId, currentTime)
-              currentFileId = item && item.file_id
-              if (currentFileId && settingStore.uiAutoColorVideo && !item.description) {
-                AliFileCmd.ApiFileColorBatch(token.user_id, drive_id, 'ce74c3c', [currentFileId])
-                  .then((success) => {
-                    usePanFileStore().mColorFiles('ce74c3c', success)
-                  })
-              }
-              mpv.once('started', async () => {
-                if (currentFileId && settingStore.uiVideoPlayerHistory) {
-                  let play_cursor = await getPlayCursor(currentFileId)
-                  if (play_cursor > 0) {
-                    await mpv.seek(play_cursor, 'absolute')
-                  }
-                }
-                if (item && settingStore.uiVideoSubtitleMode === 'auto') {
-                  let filename = item.name
-                  let subTitlesList = fileList.filter((file: any) => /srt|vtt|ass/.test(file.ext))
-                  if (subTitlesList.length > 0) {
-                    let subTitleFileId = filterSubtitleFile(filename, subTitlesList)
-                    if (subTitleFileId.length > 0) {
-                      const data = await AliFile.ApiFileDownloadUrl(token.user_id, drive_id, subTitleFileId, 14400)
-                      if (typeof data !== 'string' && data.url && data.url != '') {
-                        await mpv.addSubtitles(data.url, 'select', filename)
-                      }
-                    }
-                  }
-                }
-              })
-            }
-          })
-        }
-        mpv.on('timeposition', (timeposition: number) => {
-          // console.log('timeposition', currentTime)
-          currentTime = timeposition
-        })
-        mpv.on('crashed', async () => {
-          await AliFile.ApiUpdateVideoTime(token.user_id, drive_id, currentFileId, currentTime)
-          if (settingStore.uiVideoEnablePlayerList) {
-            delTmpFile(tmpFile)
-            tmpServer.close()
-          }
-          await mpv.quit()
-        })
-      } catch (error) {
-        message.error('未知错误，请重新关闭播放器重新打开')
-        if (settingStore.uiVideoEnablePlayerList) {
-          delTmpFile(tmpFile)
-          tmpServer.close()
-        }
-        await mpv.quit()
-      }
-    }
+    playInfo = {}
   })
 }
 

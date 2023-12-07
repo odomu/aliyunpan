@@ -22,9 +22,9 @@ export default defineConfig(({ command }) => {
         }
       }
     },
-    esbuild: {
+    esbuild: isBuild ? {
       drop: ['console', 'debugger']
-    },
+    } : {},
     plugins: [
       vue({
         template: {
@@ -82,6 +82,7 @@ export default defineConfig(({ command }) => {
         host: url.hostname,
         port: +url.port
       }
-    })()
+    })(),
+    clearScreen: false
   }
 })

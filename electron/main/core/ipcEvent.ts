@@ -50,6 +50,15 @@ export default class ipcEvent {
           app.exit()
         } catch {
         }
+      } else if (data.cmd && data.cmd === 'quit') {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.destroy()
+          mainWindow = undefined
+        }
+        try {
+          app.quit()
+        } catch {
+        }
       } else if (data.cmd && data.cmd === 'minsize') {
         if (mainWindow && !mainWindow.isDestroyed()) mainWindow.minimize()
       } else if (data.cmd && data.cmd === 'maxsize') {
@@ -174,6 +183,7 @@ export default class ipcEvent {
           subProcess.unref()
           event.returnValue = {
             pid: subProcess.pid,
+            subProcess: subProcess,
             execCmd: data,
             options: options,
             exitCode: subProcess.exitCode

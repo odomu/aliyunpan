@@ -1,6 +1,7 @@
 <script setup lang='ts'>
 import useSettingStore from './settingstore'
 import MySwitch from '../layout/MySwitch.vue'
+import { computed } from 'vue'
 
 const settingStore = useSettingStore()
 const cb = (val: any) => {
@@ -27,6 +28,10 @@ function handleSelectPlayer() {
     )
   }
 }
+
+const playerType = computed(() => {
+  return settingStore.uiVideoPlayerPath.toLowerCase()
+})
 </script>
 
 <template>
@@ -85,7 +90,7 @@ function handleSelectPlayer() {
           </div>
         </template>
       </a-popover>
-      <div v-if="settingStore.uiVideoPlayer === 'web'" class='hitText'>
+      <div v-show="settingStore.uiVideoPlayer === 'web'" class='hitText'>
         【内置网页播放器】 支持倍速！支持选择清晰度！支持播放历史！支持播放列表！支持字幕选择！
       </div>
     </div>
@@ -112,7 +117,8 @@ function handleSelectPlayer() {
                        @update:model-value='cb({ uiVideoSubtitleMode: $event })'>
           <a-radio tabindex='-1' value='close'>关闭字幕加载</a-radio>
           <a-radio tabindex='-1' value='auto'>自动加载同名字幕</a-radio>
-          <a-radio tabindex='-1' value='select' v-if='!settingStore.uiVideoEnablePlayerList'>手动选择字幕文件</a-radio>
+          <a-radio tabindex='-1' value='select' v-show='!settingStore.uiVideoEnablePlayerList'>手动选择字幕文件
+          </a-radio>
         </a-radio-group>
       </div>
       <div class='settingspace'></div>
@@ -122,6 +128,7 @@ function handleSelectPlayer() {
         <template #content>
           <div style='min-width: 400px'>
             <span class='opred'>自定义播放器参数, 使用,【逗号】分割</span> <br>
+            <span class='opred'>参数错误可能无法启动</span> <br>
             <hr />
             <span class='opblue'>例如【MPV播放器HDR】：</span> --d3d11-output-csp=pq
           </div>
@@ -137,10 +144,20 @@ function handleSelectPlayer() {
           placeholder='没有不填，用于自定义播放器启动参数'
           @update:model-value='cb({ uiVideoPlayerParams: $event })' />
       </div>
-      <template v-if='settingStore.uiVideoPlayerPath.toLowerCase().includes("mpv")
-                      || settingStore.uiVideoPlayerPath.toLowerCase().includes("potplayer")'>
+      <template v-if='playerType.includes("mpv")
+                      || playerType.includes("potplayer")'>
         <div class='settingspace'></div>
         <div class='settinghead'>:播放列表设置</div>
+        <a-popover position='bottom'>
+          <i class='iconfont iconbulb' />
+          <template #content>
+            <div style='min-width: 400px'>
+              <span class='opred'>PotPlayer开启播放列表：</span><br>
+              无法自动加载字幕和跳转播放历史 <br>
+              <hr />
+            </div>
+          </template>
+        </a-popover>
         <div class='settingrow'>
           <MySwitch :value='settingStore.uiVideoEnablePlayerList'
                     @update:value='cb({ uiVideoEnablePlayerList: $event })'>
@@ -149,7 +166,7 @@ function handleSelectPlayer() {
         </div>
       </template>
       <template v-if='settingStore.uiVideoEnablePlayerList
-              && !settingStore.uiVideoPlayerPath.toLowerCase().includes("mpv")'>
+              && !playerType.includes("mpv")'>
         <div class='settingspace'></div>
         <div class='settinghead'>:播放器退出设置</div>
         <div class='settingrow'>
@@ -195,21 +212,21 @@ function handleSelectPlayer() {
         </template>
       </a-popover>
       <template v-if='settingStore.uiVideoPlayer=== "other"'>
-        <div v-if="settingStore.uiVideoPlayerPath.toLowerCase().includes('mpv')" class='hitText'>
+        <div v-show="playerType.includes('mpv')" class='hitText'>
           【mpv】 支持倍速！支持外挂字幕！支持切换音轨！支持播放历史!
         </div>
-        <div v-if="settingStore.uiVideoPlayerPath.toLowerCase().includes('potplayer')" class='hitText'>
+        <div v-show="playerType.includes('potplayer')" class='hitText'>
           【potplayer】 支持倍速！支持外挂字幕！支持切换音轨！支持播放历史!
         </div>
       </template>
       <div class='settingrow'
-           :style="{ display: settingStore.uiVideoPlayer == 'other' && platform == 'win32' ? '' : 'none', marginTop: '8px' }">
+           :style="{ display: settingStore.uiVideoPlayer === 'other' && platform === 'win32' ? '' : 'none', marginTop: '8px' }">
         <a-input-search tabindex='-1' style='max-width: 378px' :readonly='true' button-text='选择播放软件' search-button
                         :model-value='settingStore.uiVideoPlayerPath' @search='handleSelectPlayer' />
       </div>
     </template>
     <div class='settingrow'
-         :style="{ display: settingStore.uiVideoPlayer == 'other' && platform == 'darwin' ? '' : 'none', marginTop: '8px' }">
+         :style="{ display: settingStore.uiVideoPlayer === 'other' && platform === 'darwin' ? '' : 'none', marginTop: '8px' }">
       <a-input-search tabindex='-1' style='max-width: 378px' :readonly='true' button-text='选择播放软件' search-button
                       :model-value='settingStore.uiVideoPlayerPath' @search='handleSelectPlayer' />
       <a-popover position='bottom'>
