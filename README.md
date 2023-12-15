@@ -1,32 +1,3 @@
-<p align="center">
- <img src="https://github.com/odomu/aliyunpan/blob/main/static/images/icon_256x256.png" alt="NebulaGraph Data Intelligence Suite(ngdi)">
-</p>
-
-<h2 align="center">阿里云盘小白羊 v3</h2>
-
-<p align="center">
-  <strong>该项目只是满足个人的需求进行修改，部分功能能用就行 </strong><br>
-</p>
-
-<p align="center">
- <a href="https://github.com/odomu" target="_blank">
-   <img src="https://img.shields.io/badge/作者-@odomu-000000.svg?style=flat-square&logo=GitHub" />
- </a>
- <a href="https://github.com/odomu/aliyunpan/releases" target="_blank">
-   <img src="https://img.shields.io/github/downloads/odomu/aliyunpan/total?style=flat-square" />
- </a>
- <a href="https://github.com/odomu/aliyunpan/releases/latest" target="_blank">
-   <img src="https://img.shields.io/github/downloads/odomu/aliyunpan/latest/total?style=flat-square">
- </a>
- </a>
- <a href="LICENSE" target="_blank">
-   <img src="https://img.shields.io/github/license/odomu/aliyunpan.svg?style=flat-square" />
- </a>
- <a href="https://t.me/+n1YbKE0JNo41MWRh" target="_blank">
-   <img src="https://img.shields.io/badge/Telegram-%E7%BE%A4%E7%BB%84-blue" />
- </a>
-</p>
-
 ## 项目说明
 [阿里云盘小白羊版v3的延续版 by PingKuNet](https://github.com/PingKuNet/aliyunpan)
 <br>
@@ -45,14 +16,6 @@
 - 可以快速复制文件，预览视频的雪碧图，并直接删除文件。
 - 能够管理数万文件夹和数万文件，并一次性列出文件夹中的全部文件。
 - 支持一次性上传/下载百万级的文件/文件夹。
-
-## 请作者喝一杯咖啡
-<p align="left">
- <img height="280" width="280" src="https://github.com/odomu/aliyunpan/assets/50035498/75efbbf3-36c0-4991-9dff-4ae319d09e7c" />
-</p>
-
-## Star History
-[![Star History Chart](https://api.star-history.com/svg?repos=odomu/aliyunpan&type=Date)](https://star-history.com/#odomu/aliyunpan&Date)
 
 ## 鸣谢
 感谢原作者
