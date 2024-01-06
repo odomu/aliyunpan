@@ -7,7 +7,11 @@
 
 ### Telegram
 <a href="https://t.me/+Awbv9SwXsOg2OTIx" target="_blank">
-<img src="https://img.shields.io/badge/Telegram-%E7%BE%A4%E7%BB%84-blue" />
+  <img src="https://img.shields.io/badge/Telegram-频道-blue" />
+</a>
+
+<a href="https://t.me/+kIBYO3oGFdU1MDVh" target="_blank">
+  <img src="https://img.shields.io/badge/Telegram-交流群-blue" />
 </a>
 
 ## 功能
