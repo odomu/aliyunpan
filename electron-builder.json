@@ -38,7 +38,8 @@
     ],
     "target": [
       { "target": "AppImage", "arch": [  "x64", "arm64", "armv7l" ] },
-      { "target": "deb", "arch": [ "x64",  "arm64", "armv7l" ] }
+      { "target": "deb", "arch": [ "x64",  "arm64", "armv7l" ] },
+      { "target": "pacman", "arch": [ "x64", "arm64" ] }
     ]
   },
   "win": {
