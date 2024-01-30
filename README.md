@@ -6,7 +6,7 @@
 基于阿里云盘网页版开发的PC客户端，支持win7-11，macOS，linux
 
 ### Telegram
-<a href="https://t.me/+Awbv9SwXsOg2OTIx" target="_blank">
+<a href="https://t.me/xbyaliyunpan" target="_blank">
   <img src="https://img.shields.io/badge/Telegram-频道-blue" />
 </a>
 
