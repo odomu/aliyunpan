@@ -98,4 +98,4 @@ jobs:
         with:
           package_manager: pnpm
           release: true
-          github_token: ${{ secrets.ASSESS_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}

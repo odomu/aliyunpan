@@ -58,7 +58,7 @@ const selectFile = ref({
   file_id: 'backup_root',
   parent_file_id: '',
   description: '',
-  isLeaf: false
+  isDir: true
 })
 
 const handleOpen = async () => {
@@ -94,7 +94,7 @@ const handleOpen = async () => {
             file_id: item.file_id,
             parent_file_id: item.parent_file_id,
             description: item.description,
-            isLeaf: false
+            isDir: true
           }
         }
       }
@@ -110,7 +110,7 @@ const handleOpen = async () => {
       file_id: 'backup_root',
       parent_file_id: '',
       description: '',
-      isLeaf: false
+      isDir: true
     }
     treeSelectedKeys.value = ['backup_root']
   }
@@ -139,7 +139,7 @@ const handleClose = () => {
     file_id: 'backup_root',
     parent_file_id: '',
     description: '',
-    isLeaf: false
+    isDir: true
   }
   treeData.value = [{
     __v_skip: true,
@@ -206,7 +206,7 @@ const handleTreeSelect = (keys: any[], info: {
     file_id: key,
     parent_file_id: parent_file_id,
     description: description,
-    isLeaf: isLeaf || false
+    isDir: !isLeaf
   }
   treeSelectedKeys.value = [key]
   treeSelectToExpand(keys, info)
@@ -377,7 +377,7 @@ const handleOKNewDir = () => {
           file_id: newdirid,
           parent_file_id: selectFile.value.parent_file_id,
           description: '',
-          isLeaf: false
+          isDir: true
         }
         treeExpandedKeys.value = treeExpandedKeys.value.concat([selectFile.value.file_id, newdirid])
         let backupPan: TreeNodeData[] = []
@@ -396,7 +396,7 @@ const handleOKNewDir = () => {
   })
 }
 const handleOK = () => {
-  if (props.selecttype === 'select' && !selectFile.value.isLeaf) {
+  if (props.selecttype === 'select' && selectFile.value.isDir) {
     message.error('请选择一个文件')
     return
   }

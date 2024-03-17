@@ -10,7 +10,7 @@ import AliDirFileList from '../aliapi/dirfilelist'
 import { ITokenInfo, usePanFileStore, useSettingStore } from '../store'
 import { createTmpFile, delTmpFile, GetExpiresTime } from './utils'
 import { IAliGetFileModel } from '../aliapi/alimodels'
-import { getEncType, getProxyUrl, getRawUrl } from './proxyhelper'
+import { getEncType, getProxyUrl } from './proxyhelper'
 import { CleanStringForCmd } from './filehelper'
 import Db from './db'
 import { humanTime } from './format'
@@ -22,10 +22,12 @@ import path from 'path'
 const PlayerUtils = {
   filterSubtitleFile(name: string, subTitlesList: IAliGetFileModel[]) {
     // 自动加载同名字幕
+    const findName = path.parse(name).name
     const similarity: any = subTitlesList.reduce(
       (min: any, item, index) => {
         // 莱文斯坦距离算法(计算相似度)
-        const distance = levenshtein.get(name, item.name, { useCollator: true })
+        const matchName = path.parse(item.name).name
+        const distance = levenshtein.get(findName, matchName, { useCollator: true })
         if (distance < min.distance) {
           min.distance = distance
           min.index = index
@@ -252,18 +254,16 @@ const PlayerUtils = {
     return createTmpFile(contentStr, 'play_list' + '.' + fileExt)
   },
   async mpvPlayer(token: ITokenInfo, binary: string, playArgs: any, otherArgs: any, options: SpawnOptions, exitCallBack: any) {
-    let { file, fileList, playList, playFileListPath } = otherArgs
-    // console.log('otherArgs', otherArgs)
+    let { file, fileList, playList } = otherArgs
     let {
       uiAutoColorVideo,
-      uiVideoEnablePlayerList,
       uiVideoPlayerHistory,
       uiVideoPlayerExit,
       uiVideoSubtitleMode
     } = useSettingStore()
     let socketPath = is.windows() ? '\\\\.\\pipe\\mpvserver' : '/tmp/mpvserver.sock'
     let currentTime = 0
-    let currentPlayIndex = 0
+    let currentPlayIndex = otherArgs.currentPlayIndex
     let currentFileInfo = file
     let lastUpdateRecordTime = Date.now()
     let mpv: mpvAPI = new mpvAPI(
@@ -278,34 +278,33 @@ const PlayerUtils = {
       playArgs
     )
     try {
-      let playListParams: any = []
-      if (uiVideoEnablePlayerList) {
-        currentPlayIndex = otherArgs.playList.findIndex((v: any) => v.file_id == file.file_id) || 0
-        playListParams = [
-          '--playlist=' + playFileListPath,
-          '--playlist-start=' + currentPlayIndex
-        ]
-      }
-      await mpv.start(playListParams)
+      await mpv.start()
       mpv.on('status', async (status: { property: string; value: any }) => {
-        // console.log('status', status)
+        // console.error('status', status)
         if (status.property == 'duration' && status.value > 0) {
-          if (uiVideoPlayerHistory) {
-            let playCursorInfo = await this.getPlayCursor(token.user_id, currentFileInfo.drive_id, currentFileInfo.file_id)
-            if (playCursorInfo && playCursorInfo.play_cursor > 0) {
-              await mpv.seek(playCursorInfo.play_cursor, 'absolute')
+          if (uiVideoPlayerHistory && playList.length > 0) {
+            let proxyInfo: any = await Db.getValueObject('ProxyInfo')
+            if (proxyInfo && proxyInfo.play_cursor) {
+              await mpv.seek(proxyInfo.play_cursor, 'absolute')
+            } else {
+              let playCursorInfo = await this.getPlayCursor(token.user_id, currentFileInfo.drive_id, currentFileInfo.file_id)
+              if (playCursorInfo && playCursorInfo.play_cursor > 0) {
+                await mpv.seek(playCursorInfo.play_cursor, 'absolute')
+              }
             }
           }
+        } else if (status.property == 'filename' && status.value) {
+          // 自动加载字幕
           if (uiVideoSubtitleMode === 'auto') {
-            let proxyInfo: any = await Db.getValueObject('ProxyInfo')
-            if (proxyInfo && proxyInfo.subtitle_url) {
-              await mpv.addSubtitles(proxyInfo.subtitle_url, 'select', currentFileInfo.name)
+            if (otherArgs.subTitleFile && otherArgs.subTitleFile.subTitleUrl) {
+              let { subTitleUrl, subTitleName } = otherArgs.subTitleFile
+              await mpv.addSubtitles(subTitleUrl, 'select', subTitleName)
             } else {
               let subTitlesList = fileList.filter((file: any) => /srt|vtt|ass/.test(file.ext))
               if (subTitlesList.length > 0) {
                 let subTitleFile = this.filterSubtitleFile(currentFileInfo.name, subTitlesList)
                 if (subTitleFile) {
-                  const data = await getRawUrl(token.user_id, subTitleFile.drive_id, subTitleFile.file_id, getEncType(subTitleFile))
+                  const data = await AliFile.ApiFileDownloadUrl(token.user_id, subTitleFile.drive_id, subTitleFile.file_id, 14400)
                   if (typeof data !== 'string' && data.url && data.url != '') {
                     await mpv.addSubtitles(data.url, 'select', subTitleFile.name || currentFileInfo.name)
                   }
@@ -317,6 +316,9 @@ const PlayerUtils = {
           // 保存历史
           if (uiVideoPlayerHistory && currentPlayIndex != status.value) {
             AliFile.ApiUpdateVideoTime(token.user_id, currentFileInfo.drive_id, currentFileInfo.file_id, currentTime)
+          }
+          if (otherArgs.subTitleFile) {
+            delete otherArgs.subTitleFile
           }
           currentPlayIndex = status.value
           currentFileInfo = playList[status.value]
@@ -396,11 +398,16 @@ const PlayerUtils = {
       commandStr = `${argsToStr(command)}`
     }
     // 构造播放参数
-    let { file, subTitleFile, rawData, quality, password } = otherArgs
+    let { file, subTitleFile, rawData, quality } = otherArgs
     let encType = getEncType(file)
     let play_url = ''
     let play_referer = token.open_api_access_token ? 'https://openapi.alipan.com/' : 'https://www.alipan.com/'
-    let { uiVideoEnablePlayerList, uiVideoPlayerExit, uiVideoPlayerHistory, uiVideoPlayerParams } = useSettingStore()
+    let {
+      uiVideoEnablePlayerList,
+      uiVideoPlayerExit,
+      uiVideoPlayerHistory,
+      uiVideoPlayerParams
+    } = useSettingStore()
     let playerArgs: any = []
     let options: SpawnOptions = { detached: !uiVideoPlayerExit }
     let subTitleUrl = ''
@@ -414,30 +421,40 @@ const PlayerUtils = {
         play_url = rawData.qualities.find((q: any) => q.quality === quality)?.url || rawData.qualities[0].url
       }
     }
-    // 加载网盘内字幕文件
-    if (subTitleFile) {
-      const data = await getRawUrl(token.user_id, subTitleFile.drive_id, subTitleFile.file_id, getEncType(subTitleFile), password)
+    // 优先加载网盘内字幕文件
+    if (subTitleFile && !subTitleFile.isDir) {
+      const data = await AliFile.ApiFileDownloadUrl(token.user_id, subTitleFile.drive_id, subTitleFile.file_id, 14400)
       if (typeof data !== 'string' && data.url && data.url != '') {
         subTitleUrl = data.url
       }
     }
-    if (isPotplayer && !uiVideoPlayerHistory) {
-      let play_cursor = 0
+    // 获取播放进度
+    let play_cursor = 0
+    if (uiVideoPlayerHistory) {
       let playCursorInfo = await PlayerUtils.getPlayCursor(token.user_id, file.drive_id, file.file_id)
       if (playCursorInfo) {
         play_cursor = playCursorInfo.play_cursor
       } else {
         play_cursor = file.media_play_cursor ? parseInt(file.media_play_cursor) : 0
       }
-      playerArgs = ['/new', '/autoplay', `/referer=${argsToStr(play_referer)}`, `/title=${argsToStr(file.name)}`]
-      if (play_cursor > 0 && uiVideoPlayerHistory) {
-        playerArgs.push(`/seek=${argsToStr(humanTime(play_cursor))}`)
-      }
-      if (subTitleUrl.length > 0) {
-        playerArgs.push(`/sub=${argsToStr(subTitleUrl)}`)
-      }
     }
-    if (isMPV) {
+    otherArgs.subTitleFile = { subTitleUrl: subTitleUrl, subTitleName: subTitleFile?.name || 'chi' }
+    if (isPotplayer) {
+      playerArgs = [
+        '/new',
+        '/autoplay',
+        `/referer=${argsToStr(play_referer)}`,
+        `/title=${argsToStr(file.name)}`
+      ]
+      if (!uiVideoEnablePlayerList) {
+        if (play_cursor > 0 && uiVideoPlayerHistory) {
+          playerArgs.push(`/seek=${argsToStr(humanTime(play_cursor))}`)
+        }
+        if (subTitleUrl.length > 0) {
+          playerArgs.push(`/sub=${argsToStr(subTitleUrl)}`)
+        }
+      }
+    } else if (isMPV) {
       playerArgs = [
         '--force-window=immediate',
         '--hwdec=auto',
@@ -452,6 +469,14 @@ const PlayerUtils = {
         `--referrer=${argsToStr(play_referer)}`,
         `--title=${argsToStr(file.name)}`
       ]
+      if (!uiVideoEnablePlayerList) {
+        if (play_cursor > 0 && uiVideoPlayerHistory) {
+          playerArgs.push(`--start=${play_cursor}`)
+        }
+        if (subTitleUrl.length > 0) {
+          playerArgs.push(`--sub-file=${argsToStr(subTitleUrl)}`)
+        }
+      }
     }
     if (uiVideoPlayerParams.length > 0) {
       const params = uiVideoPlayerParams.replaceAll(/\s+/g, '').split(',')
@@ -466,7 +491,7 @@ const PlayerUtils = {
         fileList = usePanFileStore().ListDataRaw
       }
       otherArgs.fileList = fileList
-      console.log('getDirFileList', fileList)
+      // console.log('getDirFileList', fileList)
       otherArgs.playList = fileList.filter((v: any) => v.category.includes('video'))
       otherArgs.playFileListPath = await this.createPlayListFile(
         token.user_id, file.file_id,
@@ -474,7 +499,11 @@ const PlayerUtils = {
         otherArgs.playList, play_referer
       )
       // console.log('tmpFile', tmpFile)
-      if (!isMPV) {
+      if (isMPV) {
+        otherArgs.currentPlayIndex = otherArgs.playList.findIndex((v: any) => v.file_id == file.file_id) || 0
+        playArgs.unshift('--playlist-start=' + otherArgs.currentPlayIndex)
+        playArgs.unshift('--playlist=' + argsToStr(otherArgs.playFileListPath))
+      } else {
         playArgs.unshift(otherArgs.playFileListPath)
       }
     } else {
@@ -497,16 +526,12 @@ const PlayerUtils = {
         videoQuality: quality,
         expires_time: GetExpiresTime(play_url),
         proxy_url: play_url,
-        subtitle_url: subTitleUrl
+        play_cursor: play_cursor
       }
       await Db.saveValueObject('ProxyInfo', info)
     }
-    if (uiVideoEnablePlayerList || uiVideoPlayerHistory) {
-      if (isMPV) {
-        await this.mpvPlayer(token, commandStr, playArgs, otherArgs, options, exitCallBack)
-      } else {
-        this.commandSpawn(commandStr, playArgs, options, exitCallBack)
-      }
+    if ((uiVideoEnablePlayerList || uiVideoPlayerHistory) && isMPV) {
+      await this.mpvPlayer(token, commandStr, playArgs, otherArgs, options, exitCallBack)
     } else {
       this.commandSpawn(commandStr, playArgs, options, exitCallBack)
     }

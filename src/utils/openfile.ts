@@ -62,7 +62,7 @@ export async function menuOpenFile(file: IAliGetFileModel, password: string = ''
     }
     // 选择字幕
     let subTitleFile: any
-    const { uiVideoPlayer, uiVideoSubtitleMode, uiVideoQualityTips } = useSettingStore()
+    const { uiVideoPlayer, uiVideoSubtitleMode } = useSettingStore()
     const listDataRaw: IAliGetFileModel[] = usePanFileStore().ListDataRaw || []
     const subTitlesList: IAliGetFileModel[] = listDataRaw.filter((file) => /srt|vtt|ass/.test(file.ext))
     if (uiVideoPlayer === 'other') {

@@ -141,32 +141,33 @@ const handleClearDanmuCache = () => {
           记忆上次选择的清晰度
         </MySwitch>
       </div>
-      <div class='settingspace'></div>
-      <div class='settinghead'>:字幕加载设置</div>
-      <a-popover position='bottom'>
-        <i class='iconfont iconbulb' />
-        <template #content>
-          <div style='min-width: 400px'>
-            默认：<span class='opred'>自动加载同名字幕</span>
-            <hr />
-            <span class='opred'>关闭字幕加载</span>：<br />
-            不自动加载字幕
-            <div class='hrspace'></div>
-            <span class='opred'>自动加载同名字幕</span>：<br />
-            当只有一个字幕文件时，无法比较字幕是否和视频名称同名<br />默认会加载该字幕
-            <div class='hrspace'></div>
-          </div>
-        </template>
-      </a-popover>
-      <div class='settingrow' style='min-width: 400px '>
-        <a-radio-group type='button' tabindex='-1' :model-value='settingStore.uiVideoSubtitleMode'
-                       @update:model-value='cb({ uiVideoSubtitleMode: $event })'>
-          <a-radio tabindex='-1' value='close'>关闭字幕加载</a-radio>
-          <a-radio tabindex='-1' value='auto'>自动加载同名字幕</a-radio>
-          <a-radio tabindex='-1' value='select' v-show='!settingStore.uiVideoEnablePlayerList'>手动选择字幕文件
-          </a-radio>
-        </a-radio-group>
-      </div>
+      <template v-if="!settingStore.uiVideoEnablePlayerList || (settingStore.uiVideoEnablePlayerList && !playerType.includes('potplayer'))">
+        <div class='settingspace'></div>
+        <div class='settinghead'>:字幕加载设置</div>
+        <a-popover position='bottom'>
+          <i class='iconfont iconbulb' />
+          <template #content>
+            <div style='min-width: 400px'>
+              默认：<span class='opred'>自动加载同名字幕</span>
+              <hr />
+              <span class='opred'>关闭字幕加载</span>：<br />
+              不自动加载字幕
+              <div class='hrspace'></div>
+              <span class='opred'>自动加载同名字幕</span>：<br />
+              当只有一个字幕文件时，无法比较字幕是否和视频名称同名<br />默认会加载该字幕
+              <div class='hrspace'></div>
+            </div>
+          </template>
+        </a-popover>
+        <div class='settingrow' style='min-width: 400px '>
+          <a-radio-group type='button' tabindex='-1' :model-value='settingStore.uiVideoSubtitleMode'
+                         @update:model-value='cb({ uiVideoSubtitleMode: $event })'>
+            <a-radio tabindex='-1' value='close'>关闭字幕</a-radio>
+            <a-radio tabindex='-1' value='auto'>自动加载</a-radio>
+            <a-radio tabindex='-1' value='select'>手动选择</a-radio>
+          </a-radio-group>
+        </div>
+      </template>
       <template v-if='playerType.includes("mpv") || playerType.includes("potplayer")'>
         <div class='settingspace'></div>
         <div class='settinghead'>:播放列表设置</div>
