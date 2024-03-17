@@ -502,7 +502,7 @@ const PlayerUtils = {
       if (isMPV) {
         otherArgs.currentPlayIndex = otherArgs.playList.findIndex((v: any) => v.file_id == file.file_id) || 0
         playArgs.unshift('--playlist-start=' + otherArgs.currentPlayIndex)
-        playArgs.unshift('--playlist=' + argsToStr(otherArgs.playFileListPath))
+        playArgs.unshift('--playlist=' + otherArgs.playFileListPath)
       } else {
         playArgs.unshift(otherArgs.playFileListPath)
       }
