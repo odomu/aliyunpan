@@ -71,9 +71,6 @@ const startStop = {
       // =========================
       // STARTING NEW MPV INSTANCE
       // =========================
-
-      // check if the binary is actually available
-      await util.checkMpvBinary(this.options.binary)
       // check for the corrrect ipc command
       const ipcCommand = await util.findIPCCommand(this.options)
       // check if mpv could be started succesffuly
@@ -81,7 +78,7 @@ const startStop = {
         // add the ipcCommand to the arguments
         this.mpv_arguments.push(ipcCommand + '=' + this.options.socket)
         // spawns the mpv player
-        this.mpvPlayer = spawn(this.options.binary ? this.options.binary : 'mpv', this.mpv_arguments.concat(mpv_args), this.options.spawnOptions)
+        this.mpvPlayer = spawn(this.options.binary, this.mpv_arguments.concat(mpv_args), this.options.spawnOptions)
         // callback to listen to stdout + stderr to see, if MPV could bind the IPC socket
         const stdCallback = (data) => {
           // stdout/stderr output
