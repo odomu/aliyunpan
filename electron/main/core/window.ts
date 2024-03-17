@@ -92,9 +92,6 @@ export function createMainWindow() {
       AppWindow.winWidth = 990
       AppWindow.winHeight = 680
     }
-  } else {
-    AppWindow.winWidth = 990
-    AppWindow.winHeight = 680
   }
   AppWindow.mainWindow = createElectronWindow(AppWindow.winWidth, AppWindow.winHeight, true, 'main', AppWindow.winTheme)
 
