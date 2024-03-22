@@ -533,7 +533,7 @@ export default class AliFile {
     const postVideoData = {
       drive_id: drive_id,
       file_id: file_id,
-      play_cursor: play_cursor.toString()
+      play_cursor: Math.trunc(play_cursor).toString()
     }
     const respvideo = await AliHttp.Post(url, postVideoData, user_id, '')
     if (AliHttp.IsSuccess(respvideo.code)) {

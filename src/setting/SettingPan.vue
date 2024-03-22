@@ -10,6 +10,16 @@ const cb = (val: any) => {
 
 <template>
   <div class="settingcard">
+    <div class="settinghead">:优先显示文件夹</div>
+    <div class="settingrow">
+      <a-select tabindex="-1" :style="{ width: '252px' }" :model-value="settingStore.uiShowPanRootFirst"
+                :popup-container="'#SettingDiv'" @update:model-value="cb({ uiShowPanRootFirst: $event })">
+        <a-option value="all">所有</a-option>
+        <a-option value="backup">备份盘</a-option>
+        <a-option value="resource">资源盘</a-option>
+      </a-select>
+    </div>
+    <div class="settingspace"></div>
     <div class="settinghead">:顶部显示网盘路径</div>
     <div class="settingrow">
       <MySwitch :value="settingStore.uiShowPanPath" @update:value="cb({ uiShowPanPath: $event })">在顶部显示完整的文件夹路径</MySwitch>

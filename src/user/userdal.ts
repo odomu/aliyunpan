@@ -198,10 +198,16 @@ export default class UserDAL {
     // 刷新网盘数据
     if (!useSettingStore().securityHideResourceDrive) {
       await PanDAL.aReLoadResourceDrive(token)
-      await PanDAL.aReLoadOneDirToShow(token.resource_drive_id, 'resource_root', true)
     }
     if (!useSettingStore().securityHideBackupDrive) {
       await PanDAL.aReLoadBackupDrive(token)
+    }
+    if (useSettingStore().uiShowPanRootFirst === 'resource') {
+      await PanDAL.aReLoadOneDirToShow(token.resource_drive_id, 'resource_root', true)
+    } else if (useSettingStore().uiShowPanRootFirst === 'backup')  {
+      await PanDAL.aReLoadOneDirToShow(token.backup_drive_id, 'backup_root', true)
+    } else {
+      await PanDAL.aReLoadOneDirToShow(token.resource_drive_id, 'resource_root', true)
       await PanDAL.aReLoadOneDirToShow(token.backup_drive_id, 'backup_root', true)
     }
   }

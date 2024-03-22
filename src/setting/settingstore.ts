@@ -59,6 +59,7 @@ export interface SettingState {
   // 网盘设置
   uiShowPanPath: boolean
   uiShowPanMedia: boolean
+  uiShowPanRootFirst: string
   uiFolderSize: boolean
   uiFileOrderDuli: string
   uiTimeFolderFormate: string
@@ -185,6 +186,7 @@ const setting: SettingState = {
   // 网盘设置
   uiShowPanPath: true,
   uiShowPanMedia: false,
+  uiShowPanRootFirst: 'all',
   uiFolderSize: true,
   uiFileOrderDuli: 'null',
   uiTimeFolderFormate: 'yyyy-MM-dd HH-mm-ss',
@@ -317,6 +319,7 @@ function _loadSetting(val: any) {
   // 网盘设置
   setting.uiShowPanPath = defaultBool(val.uiShowPanPath, true)
   setting.uiShowPanMedia = defaultBool(val.uiShowPanMedia, false)
+  setting.uiShowPanRootFirst = defaultValue(val.uiShowPanRootFirst, ['all', 'backup', 'resource'])
   setting.uiFolderSize = defaultBool(val.uiFolderSize, true)
   setting.uiFileOrderDuli = defaultString(val.uiFileOrderDuli, 'null')
   setting.uiTimeFolderFormate = defaultString(val.uiTimeFolderFormate, 'yyyy-MM-dd HH-mm-ss').replace('mm-dd', 'MM-dd').replace('HH-MM', 'HH-mm')

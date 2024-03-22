@@ -120,6 +120,11 @@ export default class LibassAdapter {
     this.libass = null
   }
 
+  resize() {
+    this.art.emit('artplayerPluginLibass:resize')
+    this.libass.resize()
+  }
+
   async #createLibass(option = {}) {
     if (!option.workerUrl) {
       option.workerUrl = JASSUBWorker
@@ -167,21 +172,18 @@ export default class LibassAdapter {
   }
 
   #addEventListeners() {
-    this.switchHandler = this.switch.bind(this)
-    this.visibleHandler = this.setVisibility.bind(this)
-    this.offsetHandler = this.setOffset.bind(this)
-
-    this.art.on('subtitle', this.visibleHandler)
-    this.art.on('subtitleLoad', this.switchHandler)
-    this.art.on('subtitleOffset', this.offsetHandler)
-
+    this.art.on('subtitle', this.switch.bind(this))
+    this.art.on('subtitleLoad', this.setVisibility.bind(this))
+    this.art.on('subtitleOffset', this.setOffset.bind(this))
+    this.art.on('resize', this.resize.bind(this))
     this.art.once('destroy', this.destroy.bind(this))
   }
 
   #removeEventListeners() {
-    this.art.off('subtitle', this.visibleHandler)
-    this.art.off('subtitleLoad', this.switchHandler)
-    this.art.off('subtitleOffset', this.offsetHandler)
+    this.art.off('subtitle', this.switch)
+    this.art.off('subtitleLoad', this.setVisibility)
+    this.art.off('subtitleOffset', this.setOffset)
+    this.art.off('resize', this.resize)
   }
 
   #setVttVisible(visible) {

@@ -24,7 +24,6 @@ const pageVideo = appStore.pageVideo!
 const isTop = ref(false)
 let autoPlayNumber = 0
 let lastPlayNumber = -1
-let currentTime = 0
 let playbackRate = 1
 let longPressSpeed = 1
 let ArtPlayerRef: Artplayer
@@ -91,11 +90,6 @@ const playByHls = (video: HTMLMediaElement, url: string, art: Artplayer) => {
     hls.detachMedia()
     hls.loadSource(url)
     hls.attachMedia(video)
-    hls.on(HlsJs.Events.MANIFEST_PARSED, async () => {
-      await art.play().catch()
-      await getVideoCursor(art, pageVideo.play_cursor)
-      art.playbackRate = playbackRate
-    })
     hls.on(HlsJs.Events.ERROR, async (event, data) => {
       const errorType = data.type
       const errorDetails = data.details
@@ -160,9 +154,9 @@ const createVideo = async (name: string) => {
   // 初始化
   Artplayer.SETTING_WIDTH = 300
   Artplayer.SETTING_ITEM_WIDTH = 300
-  Artplayer.NOTICE_TIME = 3000
+  Artplayer.NOTICE_TIME = 1200
   Artplayer.LOG_VERSION = false
-  Artplayer.PLAYBACK_RATE = [0.5, 1, 1.5, 2, 2.5, 3, 4]
+  Artplayer.PLAYBACK_RATE = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4]
   ArtPlayerRef = new Artplayer(options)
   ArtPlayerRef.title = name
   // 获取用户配置
@@ -196,11 +190,20 @@ const initHotKey = (art: Artplayer) => {
   })
   // x
   art.hotkey.add(88, () => {
-    art.playbackRate -= 0.25
+    art.playbackRate -= 0.5
+  })
+  // f
+  art.hotkey.add(70, () => {
+    art.fullscreen = !art.fullscreen
+  })
+  // m
+  art.hotkey.add(77, () => {
+    art.muted = !art.muted
+    art.notice.show = art.muted ? '开启静音' : '关闭静音'
   })
   // c
   art.hotkey.add(67, () => {
-    playbackRate += 0.25
+    playbackRate += 0.5
     if (playbackRate > 4) {
       playbackRate = 4
     }
@@ -236,12 +239,9 @@ const initHotKey = (art: Artplayer) => {
 const initEvent = (art: Artplayer) => {
   // 监听事件
   art.on('ready', async () => {
-    // @ts-ignore
-    if (!art.hls) {
-      await art.play().catch()
-      await getVideoCursor(art, pageVideo.play_cursor)
-      art.playbackRate = playbackRate
-    }
+    await art.play().catch()
+    await getVideoCursor(art, pageVideo.play_cursor)
+    art.playbackRate = playbackRate
   })
   // 视频播放完毕
   art.on('video:ended', async () => {
@@ -271,14 +271,20 @@ const initEvent = (art: Artplayer) => {
   // 播放倍数变化
   art.on('video:ratechange', () => {
     playbackRate = art.playbackRate
+    let $panel = art.query('.art-setting-panel.art-current')
+    let $tooltip = art.query('.art-current .art-setting-item-right-tooltip')
+    if ($tooltip) $tooltip.innerText = playbackRate === 1.0 ? art.i18n.get('Normal') : playbackRate.toFixed(1)
+    const $current = Artplayer.utils.queryAll('.art-setting-item', $panel)
+      .find((item) => Number(item.dataset.value) === playbackRate)
+    if ($current) Artplayer.utils.inverseClass($current, 'art-current')
   })
   // 播放时间变化
   art.on('video:timeupdate', async () => {
     if (art.video.currentTime > 0
       && !art.video.paused && !art.video.ended
       && art.video.readyState > art.video.HAVE_CURRENT_DATA) {
-      currentTime = art.currentTime
       const endDuration = art.storage.get('autoSkipEnd')
+      const currentTime = art.currentTime
       if (currentTime > 0 && endDuration > 0) {
         if (endDuration <= currentTime) {
           if (art.storage.get('autoPlayNext')) {
@@ -467,8 +473,8 @@ const defaultControls = async (art: Artplayer) => {
         art.storage.set('autoSkipBegin', 0)
         art.notice.show = `取消设置片头`
       } else {
-        art.storage.set('autoSkipBegin', currentTime)
-        art.notice.show = `设置片头：${currentTime}s`
+        art.storage.set('autoSkipBegin', art.currentTime)
+        art.notice.show = `设置片头：${art.currentTime}s`
       }
     }
   })
@@ -483,8 +489,8 @@ const defaultControls = async (art: Artplayer) => {
         art.storage.set('autoSkipEnd', 0)
         art.notice.show = `取消设置片尾`
       } else {
-        art.storage.set('autoSkipEnd', currentTime)
-        art.notice.show = `设置片尾：${currentTime}s`
+        art.storage.set('autoSkipEnd', art.currentTime)
+        art.notice.show = `设置片尾：${art.currentTime}s`
       }
     }
   })
@@ -535,18 +541,13 @@ const getVideoInfo = async (art: Artplayer) => {
       html: defaultQuality ? defaultQuality.html : '',
       selector: data.qualities,
       onSelect: async (item: selectorItem) => {
-        if (item.html === '原画') {
-          if (art.hls) {
-            art.hls.detachMedia()
-            art.hls.destroy()
-          }
-          art.url = item.url
-          await art.play().catch()
-          art.playbackRate = playbackRate
-        } else {
-          await art.switchQuality(item.url)
+        if (item.html === '原画' && art.hls) {
+          art.hls.detachMedia()
+          art.hls.destroy()
+          delete art.hls
         }
-        art.currentTime = currentTime
+        await art.switchQuality(item.url)
+        art.playbackRate = playbackRate
       }
     })
     // 内嵌字幕
@@ -635,7 +636,7 @@ const refreshPlayList = async (art: Artplayer, file_id?: string) => {
 }
 
 const handlerPlayTitle = (html: string) => {
-  return (html.length > 20 ? html.substring(0, 25) + '...' : html)
+  return (html.length > 15 ? html.substring(0, 10) + '...' : html)
 }
 
 const getVideoCursor = async (art: Artplayer, play_cursor?: number) => {
@@ -668,7 +669,6 @@ const getVideoCursor = async (art: Artplayer, play_cursor?: number) => {
   } else {
     art.currentTime = autoSkipBegin
   }
-  currentTime = art.currentTime
 }
 
 let onlineSubData: any = { name: '', data: '', dataUrl: '', type: '' }
@@ -912,7 +912,6 @@ onBeforeUnmount(() => {
   onlineSubData.type = ''
   autoPlayNumber = 0
   lastPlayNumber = -1
-  currentTime = 0
   playbackRate = 1
   longPressSpeed = 1
   ArtPlayerRef && ArtPlayerRef.destroy(false)
@@ -949,7 +948,7 @@ onBeforeUnmount(() => {
   </a-layout>
 </template>
 
-<style>
+<style scoped lang="less">
 .disable {
   cursor: not-allowed;
   pointer-events: none;
@@ -968,5 +967,19 @@ onBeforeUnmount(() => {
   font-size: 20px;
   font-weight: bold;
   color: white;
+}
+
+:deep(.art-notice) {
+  height: 8% !important;
+  justify-content: center;
+  align-items: center;
+
+  .art-notice-inner {
+    background-color: rgba(33, 33, 33, .9);
+    color: #fff;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: bold;
+  }
 }
 </style>

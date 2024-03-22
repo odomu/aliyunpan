@@ -220,7 +220,7 @@ export default class ServerHttp {
       })
       .catch((err: any) => {
         showMessage && message.info('检查更新失败，请检查网络是否正常')
-        DebugLog.mSaveDanger('CheckUpgrade', err)
+        // DebugLog.mSaveDanger('CheckUpgrade', err)
       })
   }
 }

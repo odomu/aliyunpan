@@ -8,6 +8,7 @@ export default function artplayerPluginLibass(option) {
       libass: adapter.libass,
       visible: adapter.visible,
       init: adapter.init.bind(adapter),
+      resize: adapter.resize.bind(adapter),
       switch: adapter.switch.bind(adapter),
       show: adapter.show.bind(adapter),
       hide: adapter.hide.bind(adapter),

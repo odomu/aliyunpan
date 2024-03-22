@@ -39,6 +39,7 @@ class Youku {
 
   handleSearchRes(data, pos) {
     const items = data.pageComponentList
+    if (!items) return {}
     for (const item of items) {
       const info = item.commonData
       if (!info || !info.leftButtonDTO) {

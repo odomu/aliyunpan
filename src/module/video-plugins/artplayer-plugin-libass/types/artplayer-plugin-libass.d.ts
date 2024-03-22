@@ -45,6 +45,7 @@ declare const artplayerPluginAss: (options: Option) => (art: Artplayer) => {
   visible: boolean;
   init: () => void;
   switch: (url: string) => void;
+  resize: () => void;
   show: () => void;
   hide: () => void;
   destroy: () => void;

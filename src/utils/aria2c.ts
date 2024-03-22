@@ -158,7 +158,7 @@ export async function AriaChangeToRemote() {
 
 export async function AriaChangeToLocal() {
   CloseRemote()
-  if (Aria2cLocalRelaunchTime < 10) {
+  if (Aria2cLocalRelaunchTime < 5) {
     try {
       let port = 16800
       if (Aria2EngineLocal == undefined) {
@@ -176,7 +176,7 @@ export async function AriaChangeToLocal() {
         })
         Aria2EngineLocal.setMaxListeners(0)
       }
-      await Sleep(500)
+      await Sleep(800)
       await Aria2EngineLocal.open()
         .then(() => {
           Aria2cLocalRelaunchTime = 0
