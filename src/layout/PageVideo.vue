@@ -9,7 +9,7 @@ import levenshtein from 'fast-levenshtein'
 import type { SettingOption } from 'artplayer/types/setting'
 import type { Option } from 'artplayer/types/option'
 import AliFileCmd from '../aliapi/filecmd'
-import { getEncType, getRawUrl, IRawUrl } from '../utils/proxyhelper'
+import { getEncType, getProxyUrl, getRawUrl, IRawUrl } from '../utils/proxyhelper'
 import { TestAlt, TestKey } from '../utils/keyboardhelper'
 import message from '../utils/message'
 import { GetExpiresTime } from '../utils/utils'
@@ -154,7 +154,7 @@ const createVideo = async (name: string) => {
   // 初始化
   Artplayer.SETTING_WIDTH = 300
   Artplayer.SETTING_ITEM_WIDTH = 300
-  Artplayer.NOTICE_TIME = 1200
+  Artplayer.NOTICE_TIME = 3000
   Artplayer.LOG_VERSION = false
   Artplayer.PLAYBACK_RATE = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4]
   ArtPlayerRef = new Artplayer(options)
@@ -515,10 +515,22 @@ const getVideoInfo = async (art: Artplayer) => {
     let defaultQuality: selectorItem
     if (uiVideoQuality === 'Origin') {
       defaultQuality = data.qualities[0]
+      // 代理播放
+      defaultQuality.url = getProxyUrl({
+        user_id: pageVideo.user_id,
+        drive_id: pageVideo.drive_id,
+        file_id: pageVideo.file_id,
+        encType: pageVideo.encType,
+        password: pageVideo.password,
+        file_size: data.size,
+        quality: 'Origin',
+        proxy_url: data.url
+      })
     } else {
       let preData = data.qualities.filter(q => q.width)
       defaultQuality = preData.find(q => q.quality === uiVideoQuality) || preData[0] || data.qualities[0]
     }
+
     if (isBigFile && defaultQuality.html == '原画') {
       if (pageVideo.encType) {
         art.emit('video:error')
@@ -526,12 +538,11 @@ const getVideoInfo = async (art: Artplayer) => {
         return
       }
       if (data.qualities.length > 1) {
-        art.notice.show = '原画文件超过3GB，自动切换到转码画质播放'
-        defaultQuality = data.qualities[1]
+        art.notice.show = '文件超过3GB，加载非常慢'
       }
     }
-    defaultQuality.default = true
     art.url = defaultQuality.url
+    defaultQuality.default = true
     pageVideo.expire_time = GetExpiresTime(defaultQuality.url)
     art.controls.update({
       name: 'quality',

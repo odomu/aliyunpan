@@ -95,31 +95,6 @@ class WebDavServer {
     }
   }
 
-  private handleOptionsRequest(ctx: HTTPRequestContext, next: () => void) {
-    if (ctx.request.method === 'OPTIONS') {
-      ctx.response.setHeader('DAV', '1,2')
-      ctx.response.setHeader('Access-Control-Allow-Origin', '*')
-      ctx.response.setHeader('Access-Control-Allow-Credentials', 'true')
-      ctx.response.setHeader(
-        'Access-Control-Allow-Headers',
-        'Authorization, Depth, Content-Type'
-      )
-      ctx.response.setHeader(
-        'Access-Control-Allow-Methods',
-        'PROPPATCH,PROPFIND,OPTIONS,DELETE,UNLOCK,COPY,LOCK,MOVE,HEAD,POST,PUT,GET'
-      )
-      ctx.response.setHeader(
-        'Access-Control-Expose-Headers',
-        'DAV, Content-Length, Allow'
-      )
-      ctx.response.setHeader('MS-Author-Via', 'DAV')
-      ctx.setCode(200)
-      ctx.exit()
-    } else {
-      next()
-    }
-  }
-
   config(options: WebDAVServerOptions) {
     this.options = Object.assign(this.options, options)
     return this
@@ -136,7 +111,6 @@ class WebDavServer {
       const { headers, method } = ctx.request
       const { depth } = headers
       this.handleRequestPaths(ctx)
-      // this.handleOptionsRequest(ctx, next)
       await this.handleGetRequest(ctx, next)
     })
     server.afterRequest(async (ctx: HTTPRequestContext, next: () => void) => {

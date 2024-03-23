@@ -234,7 +234,7 @@ const setting: SettingState = {
   webDavEnable: false,
   webDavAutoEnable: false,
   webDavHost: '127.0.0.1',
-  webDavPort: 12000,
+  webDavPort: 8888,
   webDavListCache: 10,
   webDavStrategy: 'redirect',
 
@@ -247,7 +247,7 @@ const setting: SettingState = {
   debugDownedListMax: 5000,
   debugFolderSizeCacheHour: 72,
   debugProxyHost: '127.0.0.1',
-  debugProxyPort: '5000',
+  debugProxyPort: '6666',
   // 自动填写 分享链接提取码
   yinsiLinkPassword: false,
   yinsiZipPassword: false,
@@ -488,6 +488,8 @@ const useSettingStore = defineStore('setting', {
       }
       SaveSetting()
       useAppStore().toggleTheme(setting.uiTheme)
+      window.MainProxyHost = setting.debugProxyHost
+      window.MainProxyPort = setting.debugProxyPort
       window.WinMsgToUpload({ cmd: 'SettingRefresh' })
       window.WinMsgToDownload({ cmd: 'SettingRefresh' })
     },

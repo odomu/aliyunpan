@@ -107,14 +107,16 @@ export function getFlowEnc(user_id: string, fileSize: number, encType: string, p
 }
 
 export function getProxyUrl(info: FileInfo) {
-  let proxyUrl = `http://${window.MainProxyHost}:${window.MainProxyPort}/proxy`
+  let { debugProxyHost, debugProxyPort } = useSettingStore()
+  let proxyUrl = `http://${debugProxyHost}:${debugProxyPort}/proxy`
   let params = Object.keys(info).filter(v => info[v])
     .map((key: string) => `${encodeURIComponent(key)}=${encodeURIComponent(info[key]!!)}`)
   return `${proxyUrl}?${params.join('&')}`
 }
 
 export function getRedirectUrl(info: FileInfo) {
-  let redirectUrl = `http://${window.MainProxyHost}:${window.MainProxyPort}/redirect`
+  let { debugProxyHost, debugProxyPort } = useSettingStore()
+  let redirectUrl = `http://${debugProxyHost}:${debugProxyPort}/redirect`
   let params = Object.keys(info).filter(v => info[v])
     .map((key: string) => `${encodeURIComponent(key)}=${encodeURIComponent(info[key]!!)}`)
   return `${redirectUrl}?${params.join('&')}`
@@ -236,22 +238,24 @@ export async function createProxyServer(port: number) {
         await Db.deleteValueObject('ProxyInfo')
         return
       }
-      if (!encType) {
-        // 302重定向
+      // 转码文件302重定向
+      if (proxyUrl.includes('.aliyuncs.com')) {
         clientRes.writeHead(302, { 'Location': proxyUrl })
         clientRes.end()
         return
       }
+      console.warn('proxy.range', clientReq.headers.range)
       // 是否需要解密
       let decryptTransform: any = null
-      console.warn('proxy.range', clientReq.headers.range)
-      // 要定位请求文件的位置 bytes=xxx-
-      const range = clientReq.headers.range
-      const start = range ? parseInt(range.replace('bytes=', '').split('-')[0]) : 0
-      const flowEnc = getFlowEnc(user_id, file_size, encType, password)!!
-      decryptTransform = flowEnc.decryptTransform()
-      if (start) {
-        await flowEnc.setPosition(start)
+      if (encType) {
+        // 要定位请求文件的位置 bytes=xxx-
+        const range = clientReq.headers.range
+        const start = range ? parseInt(range.replace('bytes=', '').split('-')[0]) : 0
+        const flowEnc = getFlowEnc(user_id, file_size, encType, password)!!
+        decryptTransform = flowEnc.decryptTransform()
+        if (start) {
+          await flowEnc.setPosition(start)
+        }
       }
       delete clientReq.headers.host
       delete clientReq.headers.referer

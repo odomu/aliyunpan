@@ -261,7 +261,6 @@ const PlayerUtils = {
       uiVideoPlayerExit,
       uiVideoSubtitleMode
     } = useSettingStore()
-    let socketPath = is.windows() ? '\\\\.\\pipe\\mpvserver' : '/tmp/mpvserver.sock'
     let currentTime = 0
     let currentPlayIndex = otherArgs.currentPlayIndex
     let currentFileInfo = file
@@ -271,7 +270,6 @@ const PlayerUtils = {
         debug: false,
         verbose: false,
         binary: binary,
-        socket: socketPath,
         auto_restart: true,
         spawnOptions: options
       },
